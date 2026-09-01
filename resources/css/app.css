@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply font-sans antialiased;
+        font-family: 'Inter', sans-serif;
+        background-color: #F4F5F7;
+        color: #191b23;
+    }
+}
+
+@layer components {
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .material-symbols-outlined.filled {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .custom-shadow {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02);
+    }
+
+    .active-sidebar-item {
+        border-left: 4px solid #0052cc;
+        background-color: #dae2ff;
+        color: #001848;
+        font-weight: 600;
+    }
+
+    .md3-card {
+        @apply bg-surface-container-lowest rounded-xl border border-outline-variant;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02);
+    }
+
+    .md3-btn {
+        @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200;
+    }
+
+    .md3-btn-primary {
+        @apply md3-btn bg-primary text-white hover:opacity-90 shadow-md;
+    }
+
+    .md3-btn-outline {
+        @apply md3-btn bg-white text-primary border-2 border-primary rounded-xl font-bold hover:bg-primary-fixed;
+    }
+
+    .md3-btn-text {
+        @apply md3-btn text-on-surface-variant hover:bg-surface-container-high;
+    }
+
+    .md3-btn-danger {
+        @apply md3-btn bg-error text-white hover:bg-red-700 shadow-md;
+    }
+
+    .md3-input {
+        @apply w-full rounded-lg text-body-md py-3 px-4 transition-all;
+        background-color: #f3f3fd;
+        border: none;
+        outline: none;
+    }
+
+    .md3-input:focus {
+        box-shadow: 0 0 0 2px #003d9b;
+        background-color: #ffffff;
+    }
+
+    .md3-input-bordered {
+        @apply w-full rounded-lg text-body-md py-3 px-4 border border-outline-variant transition-all;
+        background-color: #ffffff;
+    }
+
+    .md3-input-bordered:focus {
+        border-color: #003d9b;
+        box-shadow: 0 0 0 2px rgba(0, 61, 155, 0.15);
+    }
+
+    .md3-select {
+        @apply w-full rounded-lg text-body-md py-3 px-4 transition-all cursor-pointer;
+        background-color: #f3f3fd;
+        border: none;
+        outline: none;
+    }
+
+    .md3-select:focus {
+        box-shadow: 0 0 0 2px #003d9b;
+        background-color: #ffffff;
+    }
+
+    .md3-label {
+        @apply block uppercase tracking-wider;
+        font-size: 12px;
+        line-height: 16px;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        color: #434654;
+    }
+
+    .md3-chip {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full font-semibold;
+        font-size: 11px;
+        text-transform: uppercase;
+    }
+
+    .md3-chip-success {
+        @apply md3-chip;
+        background-color: #E3FCEF;
+        color: #006644;
+    }
+
+    .md3-chip-error {
+        @apply md3-chip;
+        background-color: #FFEBE6;
+        color: #BF2600;
+    }
+
+    .md3-chip-warning {
+        @apply md3-chip;
+        background-color: #FFF0B3;
+        color: #705600;
+    }
+
+    .md3-chip-neutral {
+        @apply md3-chip;
+        background-color: #e1e2ec;
+        color: #434654;
+    }
+
+    .data-table-row:hover {
+        background-color: #DEEBFF;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #c3c6d6;
+        border-radius: 10px;
+    }
+}
