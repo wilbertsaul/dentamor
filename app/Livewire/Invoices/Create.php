@@ -150,6 +150,10 @@ class Create extends Component
 
     public function updatedItems($value, $key)
     {
+        if (!is_string($key) || $key === '') {
+            return;
+        }
+
         if (str_ends_with($key, '.service_id') && $value) {
             $parts = explode('.', $key);
             $index = $parts[0];
@@ -187,16 +191,102 @@ class Create extends Component
         return round($this->calcularSubtotal() + $this->calcularIgv(), 2);
     }
 
+    public function save()
+    {
+        if ($this->invoice_type === 'R') {
+            $this->saveReservation();
+            return;
+        }
+
+        $this->is_draft = false;
+        $this->saveInvoice('issued');
+    }
+
     public function saveDraft()
     {
+        if ($this->invoice_type === 'R') {
+            $this->saveReservation();
+            return;
+        }
+
         $this->is_draft = true;
         $this->saveInvoice('draft');
     }
 
-    public function save()
+    private function saveReservation()
     {
-        $this->is_draft = false;
-        $this->saveInvoice('issued');
+        $this->validate([
+            'items' => 'required|array|min:1',
+            'items.*.description' => 'required',
+            'items.*.quantity' => 'required|numeric|min:1',
+            'items.*.unit_price' => 'required|numeric|min:0',
+        ]);
+
+        $company = Company::first();
+        if (!$company) {
+            session()->flash('error', 'Debe configurar la empresa primero.');
+            return;
+        }
+
+        $serie = 'RVA';
+        $lastReservation = Invoice::where('serie', $serie)->orderBy('number', 'desc')->first();
+        $number = $lastReservation ? $lastReservation->number + 1 : 1;
+
+        $subtotal = $this->calcularSubtotal();
+        $igv = $this->calcularIgv();
+        $total = $this->calcularTotal();
+
+        $clientId = $this->client_id ?: null;
+        $clientName = trim((string) $this->clientName);
+        if (!$clientId && $clientName !== '') {
+            $existing = Client::where('doc_type', 'N')->where('name', $clientName)->first();
+            if ($existing) {
+                $clientId = $existing->id;
+            } else {
+                try {
+                    $client = Client::create([
+                        'doc_type' => 'N',
+                        'doc_number' => '00000000',
+                        'name' => $clientName,
+                        'address' => $this->clientAddress ?: null,
+                    ]);
+                    $clientId = $client->id;
+                } catch (\Throwable $e) {
+                    Log::error("saveReservation create client failed: " . $e->getMessage());
+                }
+            }
+        }
+
+        $invoice = Invoice::create([
+            'company_id' => $company->id,
+            'client_id' => $clientId,
+            'invoice_type' => 'R',
+            'serie' => $serie,
+            'number' => $number,
+            'issue_date' => $this->issue_date,
+            'currency' => $this->currency,
+            'subtotal' => $subtotal,
+            'igv' => $igv,
+            'total' => $total,
+            'sunat_status' => 'draft',
+            'is_reservation' => true,
+            'reserved_at' => now(),
+        ]);
+
+        foreach ($this->items as $item) {
+            $itemTotal = (float) $item['unit_price'] * (int) $item['quantity'];
+            InvoiceItem::create([
+                'invoice_id' => $invoice->id,
+                'service_id' => $item['service_id'] ?: null,
+                'description' => $item['description'],
+                'quantity' => (int) $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'subtotal' => round($itemTotal / 1.18, 2),
+            ]);
+        }
+
+        session()->flash('message', 'Reserva guardada correctamente. Pendiente de girar boleta o factura.');
+        return redirect()->route('invoices.index');
     }
 
     private function saveInvoice(string $mode)

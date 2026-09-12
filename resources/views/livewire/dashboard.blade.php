@@ -24,17 +24,7 @@
                 <span class="text-label-sm text-outline">Hoy</span>
             </div>
             <div class="text-headline-sm text-on-surface">S/ {{ number_format($totalAmountToday, 2) }}</div>
-            <div class="text-body-sm text-on-surface-variant mt-1">Monto facturado</div>
-        </div>
-
-        <div class="bg-surface p-card-padding rounded-xl border border-outline-variant shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 rounded-lg bg-tertiary-fixed flex items-center justify-center">
-                    <span class="material-symbols-outlined text-tertiary">schedule</span>
-                </div>
-            </div>
-            <div class="text-headline-sm text-tertiary">{{ $pendingPayments }}</div>
-            <div class="text-body-sm text-on-surface-variant mt-1">Pagos pendientes</div>
+            <div class="text-body-sm text-on-surface-variant mt-1">Monto total (hoy)</div>
         </div>
 
         <div class="bg-surface p-card-padding rounded-xl border border-outline-variant shadow-sm">
@@ -44,10 +34,33 @@
                 </div>
                 <span class="text-label-sm text-outline">Mes</span>
             </div>
-            <div class="text-headline-sm text-on-surface">S/ {{ number_format($totalRevenueMonth, 2) }}</div>
+            <div class="text-headline-sm text-on-surface">S/ {{ number_format($acceptedMonth->total_sum, 2) }}</div>
             <div class="text-body-sm text-on-surface-variant mt-1">{{ $totalInvoicesMonth }} comprobantes este mes</div>
         </div>
+
+        <div class="bg-surface p-card-padding rounded-xl border border-outline-variant shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-error-container flex items-center justify-center">
+                    <span class="material-symbols-outlined text-error">percent</span>
+                </div>
+                <span class="text-label-sm text-outline">RMT</span>
+            </div>
+            <div class="text-headline-sm text-on-surface">S/ {{ number_format($acceptedMonth->subtotal_sum * 0.01, 2) }}</div>
+            <div class="text-body-sm text-on-surface-variant mt-1">Impuesto a la Renta (1%)</div>
+        </div>
     </div>
+
+    @if($reservasPendientes > 0)
+        <a href="{{ route('invoices.index') }}"
+           class="flex items-center gap-3 bg-secondary-fixed rounded-xl border border-secondary-fixed px-5 py-4 shadow-sm hover:opacity-95 transition-opacity">
+            <span class="material-symbols-outlined text-secondary text-2xl">event_available</span>
+            <div class="flex-1">
+                <p class="text-body-md font-bold text-secondary">Tienes {{ $reservasPendientes }} reserva(s) pendiente(s) de girar</p>
+                <p class="text-body-sm text-on-surface-variant">Convierte tus ventas registradas en boletas o facturas electrónicas.</p>
+            </div>
+            <span class="material-symbols-outlined text-secondary">arrow_forward</span>
+        </a>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="bg-surface p-card-padding rounded-xl border border-outline-variant shadow-sm">
@@ -128,8 +141,8 @@
                             </td>
                             <td class="px-5 py-3 text-body-sm text-on-surface-variant">{{ $inv->client?->name ?? '-' }}</td>
                             <td class="px-5 py-3">
-                                <span class="status-badge {{ $inv->invoice_type === 'F' ? 'badge-aceptado' : 'badge-pendiente' }}">
-                                    {{ $inv->invoice_type === 'F' ? 'Factura' : 'Boleta' }}
+                                <span class="status-badge {{ $inv->is_reservation ? 'badge-reserva' : ($inv->invoice_type === 'F' ? 'badge-aceptado' : 'badge-pendiente') }}">
+                                    {{ $inv->is_reservation ? 'Reserva' : ($inv->invoice_type === 'F' ? 'Factura' : 'Boleta') }}
                                 </span>
                             </td>
                             <td class="px-5 py-3 text-body-sm text-on-surface-variant">{{ $inv->issue_date->format('d/m/Y') }}</td>

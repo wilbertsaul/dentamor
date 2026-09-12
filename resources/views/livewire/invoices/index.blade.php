@@ -49,6 +49,12 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                @if($reservasPendientes > 0)
+                    <a href="#reservas" class="px-4 py-2 bg-secondary-fixed text-secondary rounded-lg flex items-center gap-2 font-bold text-body-md shadow-sm hover:opacity-90 transition-opacity">
+                        <span class="material-symbols-outlined">event_available</span>
+                        Reservas: {{ $reservasPendientes }}
+                    </a>
+                @endif
                 <a href="{{ route('invoices.create') }}"
                    class="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
                     <span class="material-symbols-outlined">add_circle</span>
@@ -115,11 +121,11 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-col">
-                                    <span class="text-body-md font-bold text-primary">
-                                        {{ $inv->invoice_type === 'F' ? 'Factura' : 'Boleta' }} {{ $inv->full_number }}
+                                    <span class="text-body-md font-bold {{ $inv->is_reservation ? 'text-secondary' : 'text-primary' }}">
+                                        {{ $inv->is_reservation ? 'Reserva' : ($inv->invoice_type === 'F' ? 'Factura' : 'Boleta') }} {{ $inv->full_number }}
                                     </span>
                                     <span class="text-[11px] text-outline">
-                                        @if($inv->invoice_type === 'F') Operación Gravada @else Venta Minorista @endif
+                                        @if($inv->is_reservation) Pendiente de girar @elseif($inv->invoice_type === 'F') Operación Gravada @else Venta Minorista @endif
                                     </span>
                                 </div>
                             </td>
@@ -136,7 +142,9 @@
                                 <span class="text-body-md font-bold text-on-surface">S/ {{ number_format($inv->total, 2) }}</span>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                @if($inv->sunat_status === 'accepted')
+                                @if($inv->is_reservation)
+                                    <span class="status-badge badge-reserva">Reserva</span>
+                                @elseif($inv->sunat_status === 'accepted')
                                     <span class="status-badge badge-aceptado">Aceptado</span>
                                 @elseif($inv->sunat_status === 'rejected')
                                     <span class="status-badge badge-rechazado">Rechazado</span>
@@ -148,6 +156,14 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-2">
+                                    @if($inv->is_reservation)
+                                        <a href="{{ route('invoices.girar', $inv) }}"
+                                           class="px-3 py-1.5 bg-primary text-white rounded-lg text-label-md font-bold hover:opacity-90 transition-opacity flex items-center gap-1"
+                                           title="Girar boleta o factura">
+                                            <span class="material-symbols-outlined text-[18px]">send</span>
+                                            Girar
+                                        </a>
+                                    @else
                                     @if($inv->pdf_path)
                                         <a href="{{ route('invoices.pdf', $inv) }}" target="_blank"
                                            class="p-1.5 hover:bg-surface-container-highest rounded text-on-surface-variant transition-colors"
@@ -174,6 +190,7 @@
                                        title="Regenerar PDF">
                                         <span class="material-symbols-outlined text-[20px]">refresh</span>
                                     </a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

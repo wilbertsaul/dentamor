@@ -1,6 +1,6 @@
 <aside class="fixed left-0 top-0 h-screen w-sidebar bg-surface border-r border-outline-variant hidden md:flex flex-col z-30 overflow-y-auto">
     <div class="p-gutter py-6">
-        <span class="font-headline-md text-headline-md font-bold text-primary">IziPay</span>
+        <span class="font-headline-md text-headline-md font-bold text-primary">Dentamor</span>
     </div>
 
     <div class="px-4 py-2 flex items-center space-x-3 mb-6">

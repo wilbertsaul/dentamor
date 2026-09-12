@@ -70,9 +70,10 @@ class Index extends Component
             ->where('invoice_type', 'B')
             ->count();
         $porValidar = Invoice::where('sunat_status', 'pending')->count();
+        $reservasPendientes = Invoice::where('is_reservation', true)->count();
 
         return view('livewire.invoices.index', compact(
-            'invoices', 'totalMes', 'facturasEmitidas', 'boletasEmitidas', 'porValidar'
+            'invoices', 'totalMes', 'facturasEmitidas', 'boletasEmitidas', 'porValidar', 'reservasPendientes'
         ));
     }
 }

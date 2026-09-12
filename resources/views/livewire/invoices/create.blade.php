@@ -36,7 +36,20 @@
                                               : 'bg-transparent text-on-surface-variant border-outline-variant hover:bg-surface-container-low' }}">
                                 Factura (F001)
                             </button>
+                            <button type="button" wire:click="$set('invoice_type', 'R')"
+                                    class="flex-1 py-3 text-label-md rounded-xl border-2 transition-all
+                                           {{ $invoice_type === 'R'
+                                              ? 'bg-secondary text-on-secondary border-secondary shadow-sm'
+                                              : 'bg-transparent text-on-surface-variant border-outline-variant hover:bg-surface-container-low' }}">
+                                Reserva
+                            </button>
                         </div>
+                        @if($invoice_type === 'R')
+                            <p class="text-xs text-secondary flex items-center gap-1 mt-1">
+                                <span class="material-symbols-outlined text-[14px]">event_note</span>
+                                Registra la venta sin girar comprobante. Para boletas menores a S/700 el DNI es opcional.
+                            </p>
+                        @endif
                     </div>
 
                     <div>
@@ -226,7 +239,7 @@
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-surface-container-low rounded-xl p-2">
                             <span class="text-[10px] text-outline font-bold uppercase block mb-1">Serie</span>
-                            <span class="text-body-md font-semibold text-on-surface">{{ $invoice_type === 'F' ? 'F001' : 'B001' }}</span>
+                            <span class="text-body-md font-semibold text-on-surface">{{ $invoice_type === 'F' ? 'F001' : ($invoice_type === 'R' ? 'RVA' : 'B001') }}</span>
                         </div>
                         <div class="bg-surface-container-low rounded-xl p-2">
                             <span class="text-[10px] text-outline font-bold uppercase block mb-1">Fecha</span>
@@ -274,25 +287,37 @@
             </div>
 
             <div class="space-y-3">
-                <button type="button" wire:click="save" wire:loading.attr="disabled"
-                        class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold text-body-lg shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined" wire:loading.remove wire:target="save">send</span>
-                    <span wire:loading wire:target="save" class="animate-spin">
-                        <span class="material-symbols-outlined">progress_activity</span>
-                    </span>
-                    <span wire:loading.remove wire:target="save">Emitir {{ $invoice_type === 'F' ? 'Factura' : 'Boleta' }} (SUNAT)</span>
-                    <span wire:loading wire:target="save">Enviando a SUNAT...</span>
-                </button>
+                @if($invoice_type === 'R')
+                    <button type="button" wire:click="save" wire:loading.attr="disabled"
+                            class="w-full py-4 bg-secondary text-on-secondary rounded-xl font-bold text-body-lg shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined" wire:loading.remove wire:target="save">event_available</span>
+                        <span wire:loading wire:target="save" class="animate-spin">
+                            <span class="material-symbols-outlined">progress_activity</span>
+                        </span>
+                        <span wire:loading.remove wire:target="save">Guardar Reserva</span>
+                        <span wire:loading wire:target="save">Guardando...</span>
+                    </button>
+                @else
+                    <button type="button" wire:click="save" wire:loading.attr="disabled"
+                            class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold text-body-lg shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined" wire:loading.remove wire:target="save">send</span>
+                        <span wire:loading wire:target="save" class="animate-spin">
+                            <span class="material-symbols-outlined">progress_activity</span>
+                        </span>
+                        <span wire:loading.remove wire:target="save">Emitir {{ $invoice_type === 'F' ? 'Factura' : 'Boleta' }} (SUNAT)</span>
+                        <span wire:loading wire:target="save">Enviando a SUNAT...</span>
+                    </button>
 
-                <button type="button" wire:click="saveDraft" wire:loading.attr="disabled"
-                        class="w-full py-3 bg-surface-container-high text-on-surface rounded-xl font-semibold text-body-md border border-outline-variant hover:bg-surface-container-highest active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined" wire:loading.remove wire:target="saveDraft">save</span>
-                    <span wire:loading wire:target="saveDraft" class="animate-spin">
-                        <span class="material-symbols-outlined">progress_activity</span>
-                    </span>
-                    <span wire:loading.remove wire:target="saveDraft">Guardar Borrador</span>
-                    <span wire:loading wire:target="saveDraft">Guardando...</span>
-                </button>
+                    <button type="button" wire:click="saveDraft" wire:loading.attr="disabled"
+                            class="w-full py-3 bg-surface-container-high text-on-surface rounded-xl font-semibold text-body-md border border-outline-variant hover:bg-surface-container-highest active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined" wire:loading.remove wire:target="saveDraft">save</span>
+                        <span wire:loading wire:target="saveDraft" class="animate-spin">
+                            <span class="material-symbols-outlined">progress_activity</span>
+                        </span>
+                        <span wire:loading.remove wire:target="saveDraft">Guardar Borrador</span>
+                        <span wire:loading wire:target="saveDraft">Guardando...</span>
+                    </button>
+                @endif
 
                 <a href="{{ route('invoices.index') }}"
                    class="w-full py-3 bg-transparent text-on-surface-variant rounded-xl font-semibold text-body-md hover:bg-surface-container-low transition-all flex items-center justify-center gap-2">

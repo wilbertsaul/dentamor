@@ -5,6 +5,7 @@ use App\Livewire\Clients\Index as ClientsIndex;
 use App\Livewire\Company\Settings as CompanySettings;
 use App\Livewire\Dashboard;
 use App\Livewire\Invoices\Create as InvoicesCreate;
+use App\Livewire\Invoices\Girar as InvoicesGirar;
 use App\Livewire\Invoices\Index as InvoicesIndex;
 use App\Livewire\Payments\BulkInvoice as PaymentsBulk;
 use App\Livewire\Payments\Index as PaymentsIndex;
@@ -25,6 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/company', CompanySettings::class)->name('company.settings');
     Route::get('/invoices', InvoicesIndex::class)->name('invoices.index');
     Route::get('/invoices/create', InvoicesCreate::class)->name('invoices.create');
+    Route::get('/invoices/{reservation}/girar', InvoicesGirar::class)->name('invoices.girar');
     Route::get('/payments', PaymentsIndex::class)->name('payments.index');
     Route::get('/payments/bulk', PaymentsBulk::class)->name('payments.bulk');
 

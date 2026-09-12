@@ -12,7 +12,7 @@ class Invoice extends Model
         'company_id', 'client_id', 'invoice_type', 'serie', 'number',
         'issue_date', 'due_date', 'currency', 'subtotal', 'igv', 'total',
         'cdr_path', 'sunat_status', 'sunat_description', 'hash_cpe',
-        'xml_path', 'pdf_path', 'production',
+        'xml_path', 'pdf_path', 'production', 'is_reservation', 'reserved_at',
     ];
 
     protected $casts = [
@@ -22,6 +22,8 @@ class Invoice extends Model
         'igv' => 'decimal:2',
         'total' => 'decimal:2',
         'production' => 'boolean',
+        'is_reservation' => 'boolean',
+        'reserved_at' => 'datetime',
     ];
 
     public function company()

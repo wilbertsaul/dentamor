@@ -132,6 +132,35 @@
         color: #434654;
     }
 
+    .status-badge {
+        @apply inline-flex items-center px-2.5 py-1 rounded-full font-semibold text-[11px] uppercase tracking-wide;
+    }
+
+    .badge-aceptado {
+        background-color: #E3FCEF;
+        color: #006644;
+    }
+
+    .badge-pendiente {
+        background-color: #FFF0B3;
+        color: #705600;
+    }
+
+    .badge-rechazado {
+        background-color: #FFEBE6;
+        color: #BF2600;
+    }
+
+    .badge-error {
+        background-color: #FFEBE6;
+        color: #BF2600;
+    }
+
+    .badge-reserva {
+        background-color: #E7F2FF;
+        color: #0057A8;
+    }
+
     .data-table-row:hover {
         background-color: #DEEBFF;
     }
