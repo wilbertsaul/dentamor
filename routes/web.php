@@ -37,6 +37,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Storage::disk('local')->download($invoice->pdf_path);
     })->name('invoices.pdf');
 
+    Route::get('/invoices/{invoice}/pdf-view', function (Invoice $invoice) {
+        if (!$invoice->pdf_path) {
+            PdfService::generate($invoice);
+        }
+        return Storage::disk('local')->response($invoice->pdf_path);
+    })->name('invoices.pdf.view');
+
     Route::get('/invoices/{invoice}/pdf-regenerate', function (Invoice $invoice) {
         PdfService::generate($invoice);
         return redirect()->back()->with('message', 'PDF regenerado.');

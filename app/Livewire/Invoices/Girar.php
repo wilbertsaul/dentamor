@@ -198,6 +198,7 @@ class Girar extends Component
             } catch (\Throwable $e) {
                 Log::error('PDF generation failed: ' . $e->getMessage());
             }
+            $this->dispatch('openPdf', ['url' => route('invoices.pdf.view', $invoice)]);
             $this->reservation->delete();
             session()->flash('message', 'Comprobante ' . ($this->invoice_type === 'F' ? 'F' : 'B') . $serie . '-' . $number . ' emitido correctamente. Estado: ' . $result['description']);
         } else {

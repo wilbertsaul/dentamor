@@ -30,5 +30,11 @@
         </div>
 
         <div class="fixed inset-0 pointer-events-none opacity-[0.03] z-[-1]" style="background-image: radial-gradient(#003d9b 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+
+        <script>
+            Livewire.on('openPdf', ({ url }) => {
+                window.open(url, '_blank');
+            });
+        </script>
     </body>
 </html>

@@ -355,6 +355,7 @@ class Create extends Component
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error('PDF generation failed: ' . $e->getMessage());
             }
+            $this->dispatch('openPdf', ['url' => route('invoices.pdf.view', $invoice)]);
             session()->flash('message', 'Factura emitida correctamente. Estado: ' . $result['description']);
         } else {
             session()->flash('error', 'Error al enviar a SUNAT: ' . $result['description']);
