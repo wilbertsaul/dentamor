@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    container_name: dentamor_app
+    working_dir: /var/www/dentamor
+    volumes:
+      - ./:/var/www/dentamor
+    restart: unless-stopped
+    networks:
+      - jemigra_net
+
+networks:
+  jemigra_net:
+    external:
+      name: jemigra_jemigra_net
