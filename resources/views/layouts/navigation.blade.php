@@ -9,7 +9,7 @@
         </div>
         <div class="flex flex-col overflow-hidden">
             <span class="font-label-md text-on-surface truncate">{{ Auth::user()->name ?? 'Usuario' }}</span>
-            <span class="text-[10px] text-outline truncate uppercase tracking-wider">{{ Auth::user()->email ?? '' }}</span>
+            <span class="text-label-sm text-outline truncate uppercase tracking-wider">{{ Auth::user()->email ?? '' }}</span>
         </div>
     </div>
 
@@ -101,18 +101,18 @@
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 bg-surface border-t border-outline-variant shadow-2xl md:hidden">
     <a href="{{ route('dashboard') }}" class="flex flex-col items-center justify-center {{ request()->routeIs('dashboard') ? 'text-primary font-bold' : 'text-on-surface-variant' }}">
         <span class="material-symbols-outlined {{ request()->routeIs('dashboard') ? 'filled' : '' }}">home</span>
-        <span class="text-[10px] mt-1 font-semibold uppercase">Inicio</span>
+        <span class="text-label-sm mt-1 font-semibold uppercase">Inicio</span>
     </a>
     <a href="{{ route('invoices.create') }}" class="flex flex-col items-center justify-center {{ request()->routeIs('invoices.create') ? 'text-primary font-bold' : 'text-on-surface-variant' }}">
         <span class="material-symbols-outlined" style="{{ request()->routeIs('invoices.create') ? 'font-variation-settings: FILL 1;' : '' }}">add_circle</span>
-        <span class="text-[10px] mt-1 font-semibold uppercase">Facturar</span>
+        <span class="text-label-sm mt-1 font-semibold uppercase">Facturar</span>
     </a>
     <a href="{{ route('invoices.index') }}" class="flex flex-col items-center justify-center {{ request()->routeIs('invoices.*') ? 'text-primary font-bold' : 'text-on-surface-variant' }}">
         <span class="material-symbols-outlined">history</span>
-        <span class="text-[10px] mt-1 font-semibold uppercase">Docs</span>
+        <span class="text-label-sm mt-1 font-semibold uppercase">Docs</span>
     </a>
     <a href="{{ route('company.settings') }}" class="flex flex-col items-center justify-center {{ request()->routeIs('company.*') ? 'text-primary font-bold' : 'text-on-surface-variant' }}">
         <span class="material-symbols-outlined">more_horiz</span>
-        <span class="text-[10px] mt-1 font-semibold uppercase">Más</span>
+        <span class="text-label-sm mt-1 font-semibold uppercase">Más</span>
     </a>
 </nav>

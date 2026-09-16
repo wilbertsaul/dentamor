@@ -76,11 +76,13 @@
                     <div class="space-y-4">
                         <div>
                             <label class="text-label-md text-on-surface-variant">Tipo Documento</label>
-                            <select wire:model="doc_type" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
-                                <option value="DNI">DNI</option>
-                                <option value="RUC">RUC</option>
-                                <option value="CE">CE</option>
-                            </select>
+                            <x-brand-select
+                                large
+                                button-class="mt-1"
+                                :options="[['id' => 'DNI', 'label' => 'DNI'], ['id' => 'RUC', 'label' => 'RUC'], ['id' => 'CE', 'label' => 'CE']]"
+                                :selected="$doc_type"
+                                wire-set-key="doc_type"
+                            />
                             @error('doc_type') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                         </div>
                         <div>

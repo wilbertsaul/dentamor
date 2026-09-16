@@ -12,6 +12,10 @@
         background-color: #F4F5F7;
         color: #191b23;
     }
+
+    [x-cloak] {
+        display: none !important;
+    }
 }
 
 @layer components {
@@ -28,10 +32,22 @@
     }
 
     .active-sidebar-item {
-        border-left: 4px solid #0052cc;
         background-color: #dae2ff;
         color: #001848;
         font-weight: 600;
+        box-shadow: inset 4px 0 0 0 #0052cc;
+    }
+
+    .select-brand {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M6 8l4 4 4-4' stroke='%23737685' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 20px;
+        padding-right: 2.5rem !important;
+        cursor: pointer;
     }
 
     .md3-card {

@@ -137,8 +137,8 @@
                             </thead>
                             <tbody id="items-body" class="divide-y divide-outline-variant/50">
                                 @foreach($items as $index => $item)
-                                    <tr wire:key="item-{{ $index }}" class="group hover:bg-surface-container-low/50 transition-colors">
-                                        <td class="py-3 px-2">
+                                    <tr wire:key="item-{{ $index }}-{{ $item['service_id'] ?? '' }}" class="group hover:bg-surface-container-low/50 transition-colors">
+                                        <td class="py-3 px-2 align-top">
                                             <div class="flex items-center gap-1 bg-surface-container-low rounded-xl px-2">
                                                 <button type="button" wire:click="$set('items.{{ $index }}.quantity', max(1, (int){{ $item['quantity'] }} - 1))"
                                                         class="p-1 text-on-surface-variant hover:text-primary transition-colors">
@@ -153,31 +153,32 @@
                                             </div>
                                             @error("items.{$index}.quantity") <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                                         </td>
-                                        <td class="py-3 px-2">
-                                            <select wire:model.live="items.{{ $index }}.service_id"
-                                                    class="w-full bg-surface-container-low border-none rounded-xl px-3 py-2.5 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mb-1">
-                                                <option value="">Seleccionar servicio...</option>
-                                                @foreach($services as $service)
-                                                    <option value="{{ $service->id }}">{{ $service->code }} - {{ $service->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <input type="text" wire:model="items.{{ $index }}.description"
+                                        <td class="py-3 px-2 align-top">
+                                            <x-brand-select
+                                                :options="$services->map(fn($s) => ['id' => (string) $s->id, 'code' => $s->code, 'label' => $s->name])->values()->toArray()"
+                                                :selected="(string) ($item['service_id'] ?? '')"
+                                                wire-set-key="items.{{ $index }}.service_id"
+                                                placeholder="Seleccionar servicio..."
+                                                :searchable="true"
+                                                :clearable="true"
+                                            />
+                                            <input type="text" wire:model="items.{{ $index }}.description" value="{{ $item['description'] }}"
                                                    placeholder="Descripción del servicio..."
                                                    class="w-full bg-transparent border-none px-3 py-1 text-body-sm text-on-surface-variant placeholder:text-outline focus:ring-0 outline-none">
                                             @error("items.{$index}.description") <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                                         </td>
-                                        <td class="py-3 px-2">
+                                        <td class="py-3 px-2 align-top">
                                             <div class="flex items-center justify-end">
                                                 <span class="text-on-surface-variant mr-1">S/</span>
-                                                <input type="text" inputmode="decimal" wire:model.live="items.{{ $index }}.unit_price"
+                                                <input type="text" inputmode="decimal" wire:model.live="items.{{ $index }}.unit_price" value="{{ $item['unit_price'] }}"
                                                        class="w-24 text-right bg-surface-container-low border-none rounded-xl px-3 py-2.5 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none">
                                             </div>
                                             @error("items.{$index}.unit_price") <p class="text-xs text-error mt-1 text-right">{{ $message }}</p> @enderror
                                         </td>
-                                        <td class="py-3 px-2 text-right text-body-md font-semibold text-on-surface whitespace-nowrap">
+                                        <td class="py-3 px-2 align-top text-right text-body-md font-semibold text-on-surface whitespace-nowrap">
                                             S/ {{ number_format((float)($item['unit_price']??0) * (int)($item['quantity']??0), 2) }}
                                         </td>
-                                        <td class="py-3 px-2 text-center">
+                                        <td class="py-3 px-2 align-top text-center">
                                             @if(count($items) > 1)
                                                 <button type="button" wire:click="removeItem({{ $index }})"
                                                         class="p-1.5 text-outline hover:text-error hover:bg-error-container/30 rounded-full transition-colors opacity-0 group-hover:opacity-100">
@@ -238,27 +239,28 @@
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-surface-container-low rounded-xl p-2">
-                            <span class="text-[10px] text-outline font-bold uppercase block mb-1">Serie</span>
+                            <span class="text-label-sm text-outline font-bold uppercase block mb-1">Serie</span>
                             <span class="text-body-md font-semibold text-on-surface">{{ $invoice_type === 'F' ? 'F001' : ($invoice_type === 'R' ? 'RVA' : 'B001') }}</span>
                         </div>
                         <div class="bg-surface-container-low rounded-xl p-2">
-                            <span class="text-[10px] text-outline font-bold uppercase block mb-1">Fecha</span>
+                            <span class="text-label-sm text-outline font-bold uppercase block mb-1">Fecha</span>
                             <input type="date" wire:model="issue_date"
                                    class="bg-transparent border-none p-0 text-body-md font-semibold text-on-surface focus:ring-0 outline-none w-full">
                         </div>
                     </div>
 
                     <div>
-                        <label class="text-[10px] text-outline font-bold uppercase block mb-1">Moneda</label>
-                        <select wire:model="currency"
-                                class="w-full bg-surface-container-low border-none rounded-xl px-3 py-2.5 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none">
-                            <option value="PEN">Soles (PEN)</option>
-                            <option value="USD">Dólares (USD)</option>
-                        </select>
+                        <label class="text-label-sm text-outline font-bold uppercase block mb-1">Moneda</label>
+                        <x-brand-select
+                                :options="[['id' => 'PEN', 'label' => 'Soles (PEN)'], ['id' => 'USD', 'label' => 'Dólares (USD)']]"
+                                :selected="$currency"
+                                wire-set-key="currency"
+                                placeholder="Seleccionar moneda"
+                            />
                     </div>
 
                     <div>
-                        <label class="text-[10px] text-outline font-bold uppercase block mb-1">Forma de Pago</label>
+                        <label class="text-label-sm text-outline font-bold uppercase block mb-1">Forma de Pago</label>
                         <div class="flex gap-2">
                             <button type="button" wire:click="$set('payment_condition', 'contado')"
                                     class="flex-1 py-2.5 text-label-md rounded-xl border-2 transition-all
@@ -278,7 +280,7 @@
                     </div>
 
                     <div>
-                        <label class="text-[10px] text-outline font-bold uppercase block mb-1">Observaciones</label>
+                        <label class="text-label-sm text-outline font-bold uppercase block mb-1">Observaciones</label>
                         <textarea wire:model="observations" rows="2"
                                   class="w-full bg-surface-container-low border-none rounded-xl px-3 py-2.5 text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary outline-none transition-all resize-none"
                                   placeholder="Notas adicionales..."></textarea>

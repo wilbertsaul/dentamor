@@ -20,7 +20,22 @@ class SunatService
 {
     protected static function createSee(Company $company): See
     {
+        if (empty($company->ruc)) {
+            throw new \RuntimeException('Falta configurar el RUC de la empresa. Vaya a Configuración → Empresa.');
+        }
+
+        if (empty($company->sunat_username) || empty($company->sunat_password)) {
+            throw new \RuntimeException('Faltan las credenciales SOL (usuario/contraseña). Configúrelas en Configuración → Empresa.');
+        }
+
+        if (empty($company->certificate_path) || !Storage::disk('local')->exists($company->certificate_path)) {
+            throw new \RuntimeException('No se encontró el certificado digital. Suba el certificado SUNAT (.pem) en Configuración → Empresa.');
+        }
+
         $certContent = Storage::disk('local')->get($company->certificate_path);
+        if (empty($certContent)) {
+            throw new \RuntimeException('No se pudo leer el certificado digital. Verifique el archivo sunat/certificates en Configuración → Empresa.');
+        }
 
         $see = new See();
         $see->setCertificate($certContent);
@@ -76,7 +91,21 @@ class SunatService
     public static function sendInvoice(Invoice $invoice): array
     {
         $company = $invoice->company;
-        $see = static::createSee($company);
+
+        try {
+            $see = static::createSee($company);
+        } catch (\Throwable $e) {
+            $invoice->update([
+                'sunat_status' => 'error',
+                'sunat_description' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'code' => 'SETUP',
+                'description' => $e->getMessage(),
+            ];
+        }
 
         $emitter = static::buildGreenterCompany($company);
         $greenterClient = static::buildGreenterClient($invoice->client, null, null);

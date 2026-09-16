@@ -122,22 +122,26 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-label-md text-on-surface-variant">Método de Pago</label>
-                                <select wire:model="payment_method" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
-                                    <option value="">Seleccionar</option>
-                                    <option value="Efectivo">Efectivo</option>
-                                    <option value="Tarjeta">Tarjeta</option>
-                                    <option value="Transferencia">Transferencia</option>
-                                    <option value="Yape">Yape</option>
-                                    <option value="Plin">Plin</option>
-                                </select>
+                                <x-brand-select
+                                    large
+                                    button-class="mt-1"
+                                    :options="[['id' => 'Efectivo', 'label' => 'Efectivo'], ['id' => 'Tarjeta', 'label' => 'Tarjeta'], ['id' => 'Transferencia', 'label' => 'Transferencia'], ['id' => 'Yape', 'label' => 'Yape'], ['id' => 'Plin', 'label' => 'Plin']]"
+                                    :selected="$payment_method"
+                                    wire-set-key="payment_method"
+                                    placeholder="Seleccionar"
+                                    :clearable="true"
+                                />
                                 @error('payment_method') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                             </div>
                             <div>
                                 <label class="text-label-md text-on-surface-variant">Tipo Comprobante</label>
-                                <select wire:model="invoice_type" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
-                                    <option value="B">Boleta</option>
-                                    <option value="F">Factura</option>
-                                </select>
+                                <x-brand-select
+                                    large
+                                    button-class="mt-1"
+                                    :options="[['id' => 'B', 'label' => 'Boleta'], ['id' => 'F', 'label' => 'Factura']]"
+                                    :selected="$invoice_type"
+                                    wire-set-key="invoice_type"
+                                />
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">

@@ -40,8 +40,8 @@
 
         <div class="bg-surface p-card-padding rounded-xl border border-outline-variant shadow-sm">
             <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 rounded-lg bg-error-container flex items-center justify-center">
-                    <span class="material-symbols-outlined text-error">percent</span>
+                <div class="w-10 h-10 rounded-lg bg-tertiary-fixed flex items-center justify-center">
+                    <span class="material-symbols-outlined text-tertiary">percent</span>
                 </div>
                 <span class="text-label-sm text-outline">RMT</span>
             </div>

@@ -65,7 +65,7 @@
 
         <div class="px-4 py-3 bg-surface border-b border-outline-variant flex gap-4 overflow-x-auto custom-scrollbar">
             <div class="flex flex-col gap-1 min-w-[140px]">
-                <label class="text-[10px] font-bold text-outline uppercase">Tipo</label>
+                <label class="text-label-sm font-bold text-outline uppercase">Tipo</label>
                 <select wire:model.live="typeFilter"
                         class="text-body-md bg-transparent border-none p-0 focus:ring-0 cursor-pointer text-primary font-semibold">
                     <option value="">Todos los tipos</option>
@@ -75,7 +75,7 @@
             </div>
             <div class="w-px h-10 bg-outline-variant"></div>
             <div class="flex flex-col gap-1 min-w-[140px]">
-                <label class="text-[10px] font-bold text-outline uppercase">Estado SUNAT</label>
+                <label class="text-label-sm font-bold text-outline uppercase">Estado SUNAT</label>
                 <select wire:model.live="statusFilter"
                         class="text-body-md bg-transparent border-none p-0 focus:ring-0 cursor-pointer text-primary font-semibold">
                     <option value="">Cualquier estado</option>
@@ -87,7 +87,7 @@
             </div>
             <div class="w-px h-10 bg-outline-variant"></div>
             <div class="flex flex-col gap-1 min-w-[200px]">
-                <label class="text-[10px] font-bold text-outline uppercase">Rango de Fecha</label>
+                <label class="text-label-sm font-bold text-outline uppercase">Rango de Fecha</label>
                 <div class="flex items-center gap-2">
                     <input type="date" wire:model.live="dateFrom"
                            class="text-body-md bg-transparent border-none p-0 focus:ring-0 text-on-surface w-full">
@@ -124,7 +124,7 @@
                                     <span class="text-body-md font-bold {{ $inv->is_reservation ? 'text-secondary' : 'text-primary' }}">
                                         {{ $inv->is_reservation ? 'Reserva' : ($inv->invoice_type === 'F' ? 'Factura' : 'Boleta') }} {{ $inv->full_number }}
                                     </span>
-                                    <span class="text-[11px] text-outline">
+                                    <span class="text-label-sm text-outline">
                                         @if($inv->is_reservation) Pendiente de girar @elseif($inv->invoice_type === 'F') Operación Gravada @else Venta Minorista @endif
                                     </span>
                                 </div>
@@ -132,7 +132,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex flex-col">
                                     <span class="text-body-md font-semibold text-on-surface">{{ $inv->client?->name ?? '-' }}</span>
-                                    <span class="text-[11px] text-outline">
+                                    <span class="text-label-sm text-outline">
                                         {{ $inv->client ? $inv->client->doc_type . ': ' . $inv->client->doc_number : '' }}
                                     </span>
                                 </div>

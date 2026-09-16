@@ -34,8 +34,6 @@ class Create extends Component
     public $isLookingUp = false;
     public $clientSource = '';
 
-    protected $listeners = ['selectService' => 'onSelectService'];
-
     public function mount()
     {
         $this->services = Service::orderBy('name')->get();
