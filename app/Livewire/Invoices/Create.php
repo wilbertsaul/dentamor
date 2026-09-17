@@ -349,17 +349,25 @@ class Create extends Component
         if ($result['success']) {
             $invoice->update(['sunat_status' => $result['accepted'] ? 'accepted' : 'rejected']);
             try {
-                PdfService::generate($invoice);
+                $pdfPath = PdfService::generate($invoice);
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error('PDF generation failed: ' . $e->getMessage());
+                $pdfPath = null;
             }
-            $this->dispatch('openPdf', ['url' => route('invoices.pdf.view', $invoice)]);
-            session()->flash('message', 'Factura emitida correctamente. Estado: ' . $result['description']);
+            if ($pdfPath) {
+                $this->dispatch('openPdf', [
+                    'url' => route('invoices.pdf.view', $invoice),
+                    'redirect' => route('invoices.index'),
+                ]);
+            }
+            session()->flash('message', 'Documento emitido correctamente. Estado: ' . $result['description']);
+
+            return redirect()->route('invoices.index');
         } else {
             session()->flash('error', 'Error al enviar a SUNAT: ' . $result['description']);
-        }
 
-        return redirect()->route('invoices.index');
+            return redirect()->route('invoices.index');
+        }
     }
 
     public function render()

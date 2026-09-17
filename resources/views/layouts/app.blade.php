@@ -32,8 +32,22 @@
         <div class="fixed inset-0 pointer-events-none opacity-[0.03] z-[-1]" style="background-image: radial-gradient(#003d9b 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
 
         <script>
-            Livewire.on('openPdf', ({ url }) => {
-                window.open(url, '_blank');
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('openPdf', (payload) => {
+                    const args = Array.isArray(payload) ? payload[0] : payload;
+                    const { url, redirect } = args || {};
+                    const win = window.__livewirePdfWin;
+                    if (win && !win.closed) {
+                        win.location.href = url;
+                    } else if (url) {
+                        window.open(url, '_blank');
+                    }
+                    if (redirect) {
+                        setTimeout(() => {
+                            window.location.href = redirect;
+                        }, 1500);
+                    }
+                });
             });
         </script>
     </body>

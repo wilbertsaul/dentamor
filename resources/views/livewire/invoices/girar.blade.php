@@ -168,6 +168,7 @@
 
             <div class="space-y-3">
                 <button type="button" wire:click="girar" wire:loading.attr="disabled"
+                        x-on:click="window.__livewirePdfWin = window.open('', '_blank')"
                         class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold text-body-lg shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined" wire:loading.remove wire:target="girar">send</span>
                     <span wire:loading wire:target="girar" class="animate-spin">

@@ -194,19 +194,27 @@ class Girar extends Component
         if ($result['success']) {
             $invoice->update(['sunat_status' => $result['accepted'] ? 'accepted' : 'rejected']);
             try {
-                PdfService::generate($invoice);
+                $pdfPath = PdfService::generate($invoice);
             } catch (\Throwable $e) {
                 Log::error('PDF generation failed: ' . $e->getMessage());
+                $pdfPath = null;
             }
-            $this->dispatch('openPdf', ['url' => route('invoices.pdf.view', $invoice)]);
             $this->reservation->delete();
-            session()->flash('message', 'Comprobante ' . ($this->invoice_type === 'F' ? 'F' : 'B') . $serie . '-' . $number . ' emitido correctamente. Estado: ' . $result['description']);
+            if ($pdfPath) {
+                $this->dispatch('openPdf', [
+                    'url' => route('invoices.pdf.view', $invoice),
+                    'redirect' => route('invoices.index'),
+                ]);
+            }
+            session()->flash('message', 'Documento emitido correctamente. Estado: ' . $result['description']);
+
+            return redirect()->route('invoices.index');
         } else {
             $invoice->delete();
             session()->flash('error', 'Error al enviar a SUNAT: ' . $result['description']);
-        }
 
-        return redirect()->route('invoices.index');
+            return redirect()->route('invoices.index');
+        }
     }
 
     private function fillClient(Client $client): void
