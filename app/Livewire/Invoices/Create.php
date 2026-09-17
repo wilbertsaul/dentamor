@@ -223,7 +223,7 @@ class Create extends Component
         $company = Company::first();
         if (!$company) {
             session()->flash('error', 'Debe configurar la empresa primero.');
-            return;
+            return redirect()->route('invoices.index');
         }
 
         $serie = 'RVA';
@@ -301,7 +301,7 @@ class Create extends Component
         $company = Company::first();
         if (!$company) {
             session()->flash('error', 'Debe configurar la empresa primero.');
-            return;
+            return redirect()->route('invoices.index');
         }
 
         $serie = $this->invoice_type === 'F' ? 'F001' : 'B001';
