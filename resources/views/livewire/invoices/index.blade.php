@@ -1,6 +1,6 @@
 <div class="space-y-8">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-surface p-card-padding rounded-xl border border-outline-variant flex items-center justify-between shadow-sm">
+        <div class="bg-white p-card-padding rounded-2xl border border-outline-variant flex items-center justify-between shadow-sm hover:shadow-md hover:border-primary/50 transition-all">
             <div>
                 <p class="text-on-surface-variant text-label-md">Total del Mes</p>
                 <h3 class="font-headline-md text-headline-md mt-1">S/ {{ number_format($totalMes, 2) }}</h3>
@@ -9,7 +9,7 @@
                 <span class="material-symbols-outlined">payments</span>
             </div>
         </div>
-        <div class="bg-surface p-card-padding rounded-xl border border-outline-variant flex items-center justify-between shadow-sm">
+        <div class="bg-white p-card-padding rounded-2xl border border-outline-variant flex items-center justify-between shadow-sm hover:shadow-md hover:border-primary/50 transition-all">
             <div>
                 <p class="text-on-surface-variant text-label-md">Facturas Emitidas</p>
                 <h3 class="font-headline-md text-headline-md mt-1">{{ $facturasEmitidas }}</h3>
@@ -18,7 +18,7 @@
                 <span class="material-symbols-outlined">receipt_long</span>
             </div>
         </div>
-        <div class="bg-surface p-card-padding rounded-xl border border-outline-variant flex items-center justify-between shadow-sm">
+        <div class="bg-white p-card-padding rounded-2xl border border-outline-variant flex items-center justify-between shadow-sm hover:shadow-md hover:border-primary/50 transition-all">
             <div>
                 <p class="text-on-surface-variant text-label-md">Boletas Emitidas</p>
                 <h3 class="font-headline-md text-headline-md mt-1">{{ $boletasEmitidas }}</h3>
@@ -27,7 +27,7 @@
                 <span class="material-symbols-outlined">receipt</span>
             </div>
         </div>
-        <div class="bg-surface p-card-padding rounded-xl border border-outline-variant flex items-center justify-between shadow-sm">
+        <div class="bg-white p-card-padding rounded-2xl border border-outline-variant flex items-center justify-between shadow-sm hover:shadow-md hover:border-primary/50 transition-all">
             <div>
                 <p class="text-on-surface-variant text-label-md">Por Validar</p>
                 <h3 class="font-headline-md text-headline-md mt-1 text-tertiary">{{ str_pad($porValidar, 2, '0', STR_PAD_LEFT) }}</h3>
@@ -38,7 +38,7 @@
         </div>
     </div>
 
-    <div class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
         <div class="p-4 border-b border-outline-variant flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-container-lowest">
             <div class="flex items-center gap-3">
                 <div class="relative w-full md:w-80">
@@ -213,7 +213,7 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-surface p-6 rounded-xl border border-outline-variant shadow-sm h-80 relative flex flex-col">
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-outline-variant shadow-sm h-80 relative flex flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h4 class="font-headline-sm text-headline-sm">Tendencia de Facturación</h4>
                 <div class="flex items-center gap-2">
@@ -231,7 +231,7 @@
             </div>
         </div>
 
-        <div class="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm h-80 flex flex-col">
+        <div class="bg-white p-6 rounded-2xl border border-outline-variant shadow-sm h-80 flex flex-col">
             <h4 class="font-headline-sm text-headline-sm mb-4">SUNAT Status</h4>
             <div class="flex-1 space-y-4">
                 @php

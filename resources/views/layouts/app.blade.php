@@ -13,13 +13,13 @@
         <div class="md:ml-sidebar pt-16 min-h-screen pb-24 md:pb-0">
             <div class="p-gutter">
                 @if (session('message'))
-                    <div class="mb-6 px-4 py-3 rounded-xl flex items-center gap-2" style="background-color: #E3FCEF; color: #006644;">
+                    <div class="mb-6 px-4 py-3 rounded-xl flex items-center gap-2 border border-primary/20" style="background-color: #E6FAF7; color: #00796B;">
                         <span class="material-symbols-outlined text-lg">check_circle</span>
                         {{ session('message') }}
                     </div>
                 @endif
                 @if (session('error'))
-                    <div class="mb-6 px-4 py-3 rounded-xl flex items-center gap-2" style="background-color: #FFEBE6; color: #BF2600;">
+                    <div class="mb-6 px-4 py-3 rounded-xl flex items-center gap-2 border border-error/20" style="background-color: #FEE2E2; color: #B91C1C;">
                         <span class="material-symbols-outlined text-lg">error</span>
                         {{ session('error') }}
                     </div>
@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <div class="fixed inset-0 pointer-events-none opacity-[0.03] z-[-1]" style="background-image: radial-gradient(#003d9b 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+        <div class="fixed inset-0 pointer-events-none opacity-[0.025] z-[-1]" style="background-image: radial-gradient(#00C4A7 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
 
         <script>
             document.addEventListener('livewire:init', () => {

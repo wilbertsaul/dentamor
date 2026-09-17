@@ -37,11 +37,11 @@
         </div>
     </div>
 
-    <div class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full">
                 <thead>
-                    <tr class="border-b border-outline-variant">
+                    <tr class="bg-surface-container-low border-b border-outline-variant">
                         <th class="px-4 py-3 text-center w-12"></th>
                         <th class="px-5 py-3 text-left text-label-md text-on-surface-variant uppercase tracking-wider">Cliente</th>
                         <th class="px-5 py-3 text-left text-label-md text-on-surface-variant uppercase tracking-wider">Doc.</th>

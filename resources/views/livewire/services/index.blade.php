@@ -11,11 +11,11 @@
         </button>
     </div>
 
-    <div class="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full">
                 <thead>
-                    <tr class="border-b border-outline-variant">
+                    <tr class="bg-surface-container-low border-b border-outline-variant">
                         <th class="px-5 py-3 text-left text-label-md text-on-surface-variant uppercase tracking-wider">Código</th>
                         <th class="px-5 py-3 text-left text-label-md text-on-surface-variant uppercase tracking-wider">Nombre</th>
                         <th class="px-5 py-3 text-left text-label-md text-on-surface-variant uppercase tracking-wider">Descripción</th>
@@ -27,7 +27,7 @@
                     @forelse($services as $service)
                         <tr class="data-table-row">
                             <td class="px-5 py-3.5">
-                                <span class="status-badge bg-primary-fixed/30 text-primary font-mono">{{ $service->code }}</span>
+                                <span class="status-badge bg-primary-container text-secondary font-mono">{{ $service->code }}</span>
                             </td>
                             <td class="px-5 py-3.5 text-body-sm font-medium text-on-surface">{{ $service->name }}</td>
                             <td class="px-5 py-3.5 text-body-sm text-on-surface-variant max-w-xs truncate">{{ $service->description ?? '-' }}</td>
@@ -65,7 +65,7 @@
     @if($showModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
             <div class="fixed inset-0 bg-on-surface/40" wire:click="$set('showModal', false)"></div>
-            <div class="relative bg-surface rounded-xl shadow-lg w-full max-w-lg mx-4 p-6 z-10 border border-outline-variant">
+            <div class="relative bg-white rounded-2xl shadow-lg w-full max-w-lg mx-4 p-6 z-10 border border-outline-variant">
                 <div class="flex items-center gap-2 mb-5">
                     <span class="material-symbols-outlined text-primary text-xl">{{ $editMode ? 'edit' : 'add_circle' }}</span>
                     <h3 class="text-body-lg font-semibold text-on-surface">{{ $editMode ? 'Editar Servicio' : 'Nuevo Servicio' }}</h3>

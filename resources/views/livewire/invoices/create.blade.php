@@ -12,7 +12,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
         <div class="md:col-span-8 space-y-6">
-            <div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm custom-shadow">
+            <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm custom-shadow">
                 <div class="flex items-center gap-3 mb-5">
                     <span class="material-symbols-outlined text-primary">person_search</span>
                     <h2 class="text-headline-sm font-headline-sm text-on-surface">Datos del Cliente</h2>
@@ -110,7 +110,7 @@
                 </div>
             </div>
 
-            <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm custom-shadow">
+            <div class="bg-white rounded-2xl border border-outline-variant shadow-sm custom-shadow">
                 <div class="flex items-center justify-between p-6 pb-0">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary">table_rows</span>
@@ -203,7 +203,7 @@
         </div>
 
         <div class="md:col-span-4 space-y-6">
-            <div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm custom-shadow relative overflow-hidden">
+            <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm custom-shadow relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed/40 rounded-full blur-3xl -mr-10 -mt-10"></div>
                 <div class="absolute bottom-0 left-0 w-24 h-24 bg-secondary-fixed/40 rounded-full blur-3xl -ml-5 -mb-5"></div>
 
@@ -230,7 +230,7 @@
                 </div>
             </div>
 
-            <div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm custom-shadow">
+            <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm custom-shadow">
                 <div class="flex items-center gap-3 mb-5">
                     <span class="material-symbols-outlined text-on-surface">receipt_long</span>
                     <h2 class="text-headline-sm font-headline-sm text-on-surface">Condiciones</h2>

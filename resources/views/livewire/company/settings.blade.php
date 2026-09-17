@@ -1,6 +1,6 @@
 <div class="space-y-6 max-w-3xl">
     <form wire:submit="save">
-        <div class="bg-surface rounded-xl border border-outline-variant p-6 shadow-sm mb-6">
+        <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-5">
                 <span class="material-symbols-outlined text-primary text-xl">business</span>
                 <h3 class="text-body-lg font-semibold text-on-surface">Datos de la Empresa</h3>
@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <div class="bg-surface rounded-xl border border-outline-variant p-6 shadow-sm mb-6">
+        <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-5">
                 <span class="material-symbols-outlined text-primary text-xl">cloud</span>
                 <h3 class="text-body-lg font-semibold text-on-surface">Credenciales SUNAT</h3>
@@ -51,7 +51,7 @@
                     </div>
                     <button type="button"
                             wire:click="$set('production', {{ $production ? 'false' : 'true' }})"
-                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {{ $production ? 'bg-primary' : 'bg-surface-container-highest' }}">
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {{ $production ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-surface-container-highest' }}">
                         <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform {{ $production ? 'translate-x-6' : 'translate-x-1' }}"></span>
                     </button>
                 </div>
@@ -64,7 +64,7 @@
             </div>
         </div>
 
-        <div class="bg-surface rounded-xl border border-outline-variant p-6 shadow-sm mb-6">
+        <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-5">
                 <span class="material-symbols-outlined text-primary text-xl">badge</span>
                 <h3 class="text-body-lg font-semibold text-on-surface">Certificado Digital</h3>

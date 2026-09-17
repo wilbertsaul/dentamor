@@ -11,7 +11,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
         <div class="md:col-span-8 space-y-6">
-            <div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm custom-shadow">
+            <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm custom-shadow">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="material-symbols-outlined text-secondary">event_available</span>
                     <h2 class="text-headline-sm font-headline-sm text-on-surface">Reserva</h2>
@@ -64,7 +64,7 @@
         </div>
 
         <div class="md:col-span-4 space-y-6">
-            <div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm custom-shadow">
+            <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm custom-shadow">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="material-symbols-outlined text-primary">receipt_long</span>
                     <h2 class="text-headline-sm font-headline-sm text-on-surface">Girar como</h2>
@@ -107,7 +107,7 @@
                 </div>
             </div>
 
-            <div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm custom-shadow">
+            <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm custom-shadow">
                 <div class="flex items-center gap-3 mb-4">
                     <span class="material-symbols-outlined text-primary">person_search</span>
                     <h2 class="text-headline-sm font-headline-sm text-on-surface">Cliente</h2>

@@ -9,21 +9,21 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased min-h-screen flex items-center justify-center relative overflow-hidden bg-surface-container-low text-on-surface p-4 sm:p-6">
-        <div class="fixed inset-0 pointer-events-none opacity-[0.04]" style="background-image: radial-gradient(#003d9b 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
-        <div class="absolute top-0 right-0 w-72 h-72 bg-primary-fixed/50 rounded-full blur-3xl -mr-20 -mt-20"></div>
-        <div class="absolute bottom-0 left-0 w-72 h-72 bg-secondary-fixed/40 rounded-full blur-3xl -ml-20 -mb-20"></div>
+    <body class="font-sans antialiased min-h-screen flex items-center justify-center relative overflow-hidden bg-background text-on-surface p-4 sm:p-6">
+        <div class="fixed inset-0 pointer-events-none opacity-[0.03]" style="background-image: radial-gradient(#00C4A7 0.5px, transparent 0.5px); background-size: 24px 24px;"></div>
+        <div class="absolute top-0 right-0 w-72 h-72 bg-primary/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+        <div class="absolute bottom-0 left-0 w-72 h-72 bg-secondary/20 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
         <div class="relative w-full max-w-md">
-            <div class="mb-8 text-center">
-                <a href="/" class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-on-primary shadow-md mb-3">
-                    <span class="material-symbols-outlined text-3xl">health_and_safety</span>
-                </a>
-                <h1 class="text-headline-md font-bold text-on-surface">{{ config('app.name', 'Dentamor') }}</h1>
+            <div class="mb-8 text-center flex flex-col items-center">
+                <x-logo :size="72" :href="url('/')" :show-text="false" class="mb-3" />
+                <h1 class="font-headline-md text-headline-md font-extrabold">
+                    <span class="text-primary-dark">Dent</span><span class="text-primary">amor</span>
+                </h1>
                 <p class="text-body-sm text-on-surface-variant mt-1">Facturación electrónica para consultorios dentales</p>
             </div>
 
-            <div class="bg-surface rounded-2xl border border-outline-variant p-6 sm:p-8 shadow-lg">
+            <div class="bg-white rounded-2xl border border-outline-variant p-6 sm:p-8 shadow-lg">
                 {{ $slot }}
             </div>
 
