@@ -191,6 +191,7 @@ class Create extends Component
 
     public function save()
     {
+        Log::info("Create.save: invoice_type={$this->invoice_type} items=" . count($this->items));
         if ($this->invoice_type === 'R') {
             $this->saveReservation();
             return;
@@ -227,7 +228,7 @@ class Create extends Component
         }
 
         $serie = 'RVA';
-        $lastReservation = Invoice::where('serie', $serie)->orderBy('number', 'desc')->first();
+        $lastReservation = Invoice::withTrashed()->where('serie', $serie)->orderBy('number', 'desc')->first();
         $number = $lastReservation ? $lastReservation->number + 1 : 1;
 
         $subtotal = $this->calcularSubtotal();
@@ -270,6 +271,8 @@ class Create extends Component
             'is_reservation' => true,
             'reserved_at' => now(),
         ]);
+
+        Log::info("saveReservation: created RVA-{$number} id={$invoice->id} client_id=" . ($clientId ?? 'null'));
 
         foreach ($this->items as $item) {
             $itemTotal = (float) $item['unit_price'] * (int) $item['quantity'];

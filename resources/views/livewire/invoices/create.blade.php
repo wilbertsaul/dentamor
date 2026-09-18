@@ -289,38 +289,42 @@
             </div>
 
             <div class="space-y-3">
-                @if($invoice_type === 'R')
-                    <button type="button" wire:click="save" wire:loading.attr="disabled"
-                            class="w-full py-4 bg-secondary text-on-secondary rounded-xl font-bold text-body-lg shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined" wire:loading.remove wire:target="save">event_available</span>
-                        <span wire:loading wire:target="save" class="animate-spin">
-                            <span class="material-symbols-outlined">progress_activity</span>
-                        </span>
-                        <span wire:loading.remove wire:target="save">Guardar Reserva</span>
-                        <span wire:loading wire:target="save">Guardando...</span>
-                    </button>
-                @else
-                    <button type="button" wire:click="save" wire:loading.attr="disabled"
-                            x-on:click="window.__livewirePdfWin = window.open('', '_blank')"
-                            class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold text-body-lg shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined" wire:loading.remove wire:target="save">send</span>
-                        <span wire:loading wire:target="save" class="animate-spin">
-                            <span class="material-symbols-outlined">progress_activity</span>
-                        </span>
-                        <span wire:loading.remove wire:target="save">Emitir {{ $invoice_type === 'F' ? 'Factura' : 'Boleta' }} (SUNAT)</span>
-                        <span wire:loading wire:target="save">Enviando a SUNAT...</span>
-                    </button>
+                <button type="button" wire:click="save" wire:loading.attr="disabled"
+                        x-cloak
+                        x-show="$wire.invoice_type === 'R'"
+                        class="w-full py-4 bg-secondary text-on-secondary rounded-xl font-bold text-body-lg shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined" wire:loading.remove wire:target="save">event_available</span>
+                    <span wire:loading wire:target="save" class="animate-spin">
+                        <span class="material-symbols-outlined">progress_activity</span>
+                    </span>
+                    <span wire:loading.remove wire:target="save">Guardar Reserva</span>
+                    <span wire:loading wire:target="save">Guardando...</span>
+                </button>
 
-                    <button type="button" wire:click="saveDraft" wire:loading.attr="disabled"
-                            class="w-full py-3 bg-surface-container-high text-on-surface rounded-xl font-semibold text-body-md border border-outline-variant hover:bg-surface-container-highest active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined" wire:loading.remove wire:target="saveDraft">save</span>
-                        <span wire:loading wire:target="saveDraft" class="animate-spin">
-                            <span class="material-symbols-outlined">progress_activity</span>
-                        </span>
-                        <span wire:loading.remove wire:target="saveDraft">Guardar Borrador</span>
-                        <span wire:loading wire:target="saveDraft">Guardando...</span>
-                    </button>
-                @endif
+                <button type="button" wire:click="save" wire:loading.attr="disabled"
+                        x-cloak
+                        x-show="$wire.invoice_type !== 'R'"
+                        x-on:click="window.__livewirePdfWin = window.open('', '_blank')"
+                        class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold text-body-lg shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined" wire:loading.remove wire:target="save">send</span>
+                    <span wire:loading wire:target="save" class="animate-spin">
+                        <span class="material-symbols-outlined">progress_activity</span>
+                    </span>
+                    <span wire:loading.remove wire:target="save">Emitir {{ $invoice_type === 'F' ? 'Factura' : 'Boleta' }} (SUNAT)</span>
+                    <span wire:loading wire:target="save">Enviando a SUNAT...</span>
+                </button>
+
+                <button type="button" wire:click="saveDraft" wire:loading.attr="disabled"
+                        x-cloak
+                        x-show="$wire.invoice_type !== 'R'"
+                        class="w-full py-3 bg-surface-container-high text-on-surface rounded-xl font-semibold text-body-md border border-outline-variant hover:bg-surface-container-highest active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined" wire:loading.remove wire:target="saveDraft">save</span>
+                    <span wire:loading wire:target="saveDraft" class="animate-spin">
+                        <span class="material-symbols-outlined">progress_activity</span>
+                    </span>
+                    <span wire:loading.remove wire:target="saveDraft">Guardar Borrador</span>
+                    <span wire:loading wire:target="saveDraft">Guardando...</span>
+                </button>
 
                 <a href="{{ route('invoices.index') }}"
                    class="w-full py-3 bg-transparent text-on-surface-variant rounded-xl font-semibold text-body-md hover:bg-surface-container-low transition-all flex items-center justify-center gap-2">
