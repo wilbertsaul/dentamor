@@ -43,6 +43,33 @@
                 </div>
             </div>
 
+            <div class="flex flex-wrap items-center gap-3">
+                <button type="button" wire:click="testSunat" wire:loading.attr="disabled"
+                        class="px-4 py-2.5 border border-primary text-primary-dark rounded-xl text-body-sm font-semibold flex items-center gap-2 hover:opacity-80 transition-opacity disabled:opacity-50">
+                    <span class="material-symbols-outlined text-base">wifi_tethering</span>
+                    Probar conexión SUNAT
+                </button>
+                <span wire:loading wire:target="testSunat" class="text-body-sm text-on-surface-variant">Verificando credenciales con SUNAT...</span>
+            </div>
+
+            @if($sunatTest)
+                <div class="mt-4 px-4 py-3 rounded-xl border flex items-start gap-2 {{ $sunatTest['ok'] ? 'bg-secondary-fixed/30 border-secondary/20 text-secondary' : 'bg-error-container/30 border-error/20 text-error' }}">
+                    <span class="material-symbols-outlined text-lg">{{ $sunatTest['ok'] ? 'verified' : 'error' }}</span>
+                    <div class="space-y-1">
+                        <p class="text-body-sm font-semibold">{{ $sunatTest['message'] }}</p>
+                        @foreach($sunatTest['errors'] as $error)
+                            <p class="text-body-sm">• {{ $error }}</p>
+                        @endforeach
+                        @foreach($sunatTest['warnings'] as $warning)
+                            <p class="text-body-sm">• {{ $warning }}</p>
+                        @endforeach
+                        @foreach($sunatTest['details'] as $detail)
+                            <p class="text-body-sm opacity-90">{{ $detail }}</p>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <div class="border-t border-outline-variant pt-4 mt-4">
                 <div class="flex items-center justify-between">
                     <div>
