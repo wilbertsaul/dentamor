@@ -59,9 +59,15 @@ class Dashboard extends Component
             ->whereYear('issue_date', now()->year)
             ->count();
 
+        $hoyFacturado = (float) Invoice::whereDate('issue_date', $today)->sum('total');
+        $hoyReservas = (float) Invoice::where('is_reservation', true)->whereDate('created_at', $today)->sum('total');
+
         return view('livewire.dashboard', [
             'totalInvoicesToday' => Invoice::whereDate('issue_date', $today)->count(),
-            'totalAmountToday' => Invoice::whereDate('issue_date', $today)->sum('total'),
+            'totalAmountToday' => $hoyFacturado,
+            'hoyFacturado' => $hoyFacturado,
+            'hoyReservas' => $hoyReservas,
+            'hoyTotal' => $hoyFacturado + $hoyReservas,
             'recentInvoices' => Invoice::with('client')->latest()->take(6)->get(),
             'reservasPendientes' => Invoice::where('is_reservation', true)->count(),
             'reservasPendientesMonto' => Invoice::where('is_reservation', true)->sum('total'),

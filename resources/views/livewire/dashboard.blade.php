@@ -143,7 +143,10 @@
 
                 <div class="flex flex-wrap items-center justify-between pt-3 border-t border-outline-variant/80 text-[11px] text-on-surface-variant gap-2">
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-primary"></span> Periodo actual ({{ now()->translatedFormat('F Y') }})</span>
-                    <span class="font-semibold text-primary-dark">Hoy: S/ {{ number_format($totalAmountToday, 2) }}</span>
+                    <div class="text-right">
+                        <span class="font-bold text-primary-dark">Hoy: S/ {{ number_format($hoyTotal ?? $totalAmountToday, 2) }}</span>
+                        <span class="block text-on-surface-variant font-normal">{{ number_format($hoyFacturado ?? 0, 2) }} comprobantes + {{ number_format($hoyReservas ?? 0, 2) }} reservas</span>
+                    </div>
                 </div>
             </div>
         </div>
