@@ -12,6 +12,7 @@
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "*",
+        "phpoffice/phpspreadsheet": "^5.10",
         "simplesoftwareio/simple-qrcode": "*"
     },
     "require-dev": {
