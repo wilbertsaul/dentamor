@@ -7,6 +7,15 @@ services:
     working_dir: /var/www/dentamor
     volumes:
       - ./:/var/www/dentamor
+      # SUNAT entrega el certificado en .p12/.pfx cifrado con RC2/3DES, que en
+      # OpenSSL 3 solo se abre con el proveedor "legacy". Montamos nuestro
+      # config sobre el del sistema para que las peticiones web lo carguen, y
+      # clear_env = no hace que estas variables lleguen a los workers.
+      - ./config/openssl.cnf:/etc/ssl/openssl.cnf:ro
+      - ./docker/php-fpm/zz-clear-env.conf:/usr/local/etc/php-fpm.d/zz-clear-env.conf:ro
+    environment:
+      OPENSSL_CONF: /etc/ssl/openssl.cnf
+      OPENSSL_MODULES: /usr/lib/x86_64-linux-gnu/ossl-modules
     restart: unless-stopped
     networks:
       - jemigra_net
