@@ -1,0 +1,27 @@
+# Carga el proveedor "legacy" de OpenSSL 3.
+#
+# SIN esto, openssl_pkcs12_read() no puede abrir los archivos .p12/.pfx que
+# emite SUNAT (CDT) y las entidades certificadoras, porque vienen cifrados con
+# RC2/3DES. El error que devuelve PHP es "unsupported", que la aplicación
+# traduce como "verifique la contraseña" y lleva a error.
+#
+# Uso: definir la variable de entorno OPENSSL_CONF con la ruta a este archivo y
+# reiniciar Apache. Laravel:  setx OPENSSL_CONF "C:\ruta\proyecto\config\openssl.cnf"
+#
+# Este archivo solo es necesario si se suben certificados .p12/.pfx. Un .pem
+# sin cifrar se lee igual sin esta configuración.
+
+openssl_conf = openssl_init
+
+[openssl_init]
+providers = provider_sect
+
+[provider_sect]
+default = default_sect
+legacy = legacy_sect
+
+[default_sect]
+activate = 1
+
+[legacy_sect]
+activate = 1

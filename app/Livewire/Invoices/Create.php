@@ -10,6 +10,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Service;
 use App\Services\PdfService;
+use App\Services\Sunat\SeriesService;
 use App\Services\SunatLookupService;
 use App\Services\SunatService;
 use Illuminate\Support\Facades\Log;
@@ -18,20 +19,33 @@ use Livewire\Component;
 class Create extends Component
 {
     public $services;
+
     public $client_id;
+
     public $invoice_type = 'B';
+
     public $items = [];
+
     public $issue_date;
+
     public $currency = 'PEN';
+
     public $payment_condition = 'contado';
+
     public $observations = '';
+
     public $is_draft = false;
 
     public $searchDoc = '';
+
     public $clientName = '';
+
     public $clientAddress = '';
+
     public $clientDoc = '';
+
     public $isLookingUp = false;
+
     public $clientSource = '';
 
     public function mount()
@@ -44,7 +58,9 @@ class Create extends Component
     public function searchClient()
     {
         $doc = trim($this->searchDoc);
-        if (!$doc) return;
+        if (! $doc) {
+            return;
+        }
 
         Log::info("searchClient: searching doc='{$doc}'");
 
@@ -53,21 +69,24 @@ class Create extends Component
             Log::info("searchClient: found in DB id={$client->id} name={$client->name}");
             $this->fillClient($client);
             $this->clientSource = 'db';
+
             return;
         }
 
-        Log::info("searchClient: NOT in DB, proceeding to API lookup");
+        Log::info('searchClient: NOT in DB, proceeding to API lookup');
 
         $type = $this->detectDocType($doc);
 
         if ($type === 'CE') {
             $this->dispatch('showNotification', ['message' => 'Clientes con CE deben registrarse manualmente', 'type' => 'warning']);
+
             return;
         }
 
         $lookup = app(SunatLookupService::class);
-        if (!$lookup->isConfigured()) {
+        if (! $lookup->isConfigured()) {
             $this->dispatch('showNotification', ['message' => 'API no configurada. Ingrese datos manualmente.', 'type' => 'warning']);
+
             return;
         }
 
@@ -75,9 +94,10 @@ class Create extends Component
         $data = $type === 'RUC' ? $lookup->lookupRuc($doc) : $lookup->lookupDni($doc);
         $this->isLookingUp = false;
 
-        if (!$data) {
+        if (! $data) {
             Log::warning("searchClient: API returned no data for {$type}={$doc}");
-            $this->dispatch('showNotification', ['message' => 'No se encontraron datos para este ' . $type . '.', 'type' => 'error']);
+            $this->dispatch('showNotification', ['message' => 'No se encontraron datos para este '.$type.'.', 'type' => 'error']);
+
             return;
         }
 
@@ -91,26 +111,33 @@ class Create extends Component
                 'address' => $data['address'] ?? null,
             ]);
         } catch (\Throwable $e) {
-            Log::error("searchClient: Client create failed for {$type}={$doc}: " . $e->getMessage());
+            Log::error("searchClient: Client create failed for {$type}={$doc}: ".$e->getMessage());
             $existing = Client::where('doc_number', $doc)->first();
             if ($existing) {
                 $this->fillClient($existing);
                 $this->clientSource = 'db';
+
                 return;
             }
-            $this->dispatch('showNotification', ['message' => 'Error al guardar cliente: ' . $e->getMessage(), 'type' => 'error']);
+            $this->dispatch('showNotification', ['message' => 'Error al guardar cliente: '.$e->getMessage(), 'type' => 'error']);
+
             return;
         }
 
         $this->fillClient($client);
         $this->clientSource = 'api';
-        $this->dispatch('showNotification', ['message' => 'Cliente creado automáticamente desde ' . $type, 'type' => 'success']);
+        $this->dispatch('showNotification', ['message' => 'Cliente creado automáticamente desde '.$type, 'type' => 'success']);
     }
 
     private function detectDocType(string $doc): string
     {
-        if (strlen($doc) === 11) return 'RUC';
-        if (strlen($doc) === 8) return 'DNI';
+        if (strlen($doc) === 11) {
+            return 'RUC';
+        }
+        if (strlen($doc) === 8) {
+            return 'DNI';
+        }
+
         return 'CE';
     }
 
@@ -148,7 +175,7 @@ class Create extends Component
 
     public function updatedItems($value, $key)
     {
-        if (!is_string($key) || $key === '') {
+        if (! is_string($key) || $key === '') {
             return;
         }
 
@@ -158,7 +185,7 @@ class Create extends Component
             $service = Service::find($value);
             if ($service) {
                 $this->items[$index]['description'] = $service->name;
-                if (!isset($this->items[$index]['unit_price']) || (float) $this->items[$index]['unit_price'] == 0) {
+                if (! isset($this->items[$index]['unit_price']) || (float) $this->items[$index]['unit_price'] == 0) {
                     $this->items[$index]['unit_price'] = (float) $service->price;
                 }
             }
@@ -175,12 +202,13 @@ class Create extends Component
 
     public function calcularSubtotal()
     {
-        return collect($this->items)->sum(fn($item) => (float) ($item['subtotal'] ?? 0));
+        return collect($this->items)->sum(fn ($item) => (float) ($item['subtotal'] ?? 0));
     }
 
     public function calcularIgv()
     {
-        $totalConIgv = collect($this->items)->sum(fn($item) => (float)($item['unit_price'] ?? 0) * (int)($item['quantity'] ?? 0));
+        $totalConIgv = collect($this->items)->sum(fn ($item) => (float) ($item['unit_price'] ?? 0) * (int) ($item['quantity'] ?? 0));
+
         return round($totalConIgv - $this->calcularSubtotal(), 2);
     }
 
@@ -191,9 +219,10 @@ class Create extends Component
 
     public function save()
     {
-        Log::info("Create.save: invoice_type={$this->invoice_type} items=" . count($this->items));
+        Log::info("Create.save: invoice_type={$this->invoice_type} items=".count($this->items));
         if ($this->invoice_type === 'R') {
             $this->saveReservation();
+
             return;
         }
 
@@ -205,6 +234,7 @@ class Create extends Component
     {
         if ($this->invoice_type === 'R') {
             $this->saveReservation();
+
             return;
         }
 
@@ -222,14 +252,14 @@ class Create extends Component
         ]);
 
         $company = Company::first();
-        if (!$company) {
+        if (! $company) {
             session()->flash('error', 'Debe configurar la empresa primero.');
+
             return redirect()->route('invoices.index');
         }
 
         $serie = 'RVA';
-        $lastReservation = Invoice::withTrashed()->where('serie', $serie)->orderBy('number', 'desc')->first();
-        $number = $lastReservation ? $lastReservation->number + 1 : 1;
+        $number = SeriesService::next($company, $serie);
 
         $subtotal = $this->calcularSubtotal();
         $igv = $this->calcularIgv();
@@ -237,7 +267,7 @@ class Create extends Component
 
         $clientId = $this->client_id ?: null;
         $clientName = trim((string) $this->clientName);
-        if (!$clientId && $clientName !== '') {
+        if (! $clientId && $clientName !== '') {
             $existing = Client::where('doc_type', 'N')->where('name', $clientName)->first();
             if ($existing) {
                 $clientId = $existing->id;
@@ -251,7 +281,7 @@ class Create extends Component
                     ]);
                     $clientId = $client->id;
                 } catch (\Throwable $e) {
-                    Log::error("saveReservation create client failed: " . $e->getMessage());
+                    Log::error('saveReservation create client failed: '.$e->getMessage());
                 }
             }
         }
@@ -272,7 +302,7 @@ class Create extends Component
             'reserved_at' => now(),
         ]);
 
-        Log::info("saveReservation: created RVA-{$number} id={$invoice->id} client_id=" . ($clientId ?? 'null'));
+        Log::info("saveReservation: created RVA-{$number} id={$invoice->id} client_id=".($clientId ?? 'null'));
 
         foreach ($this->items as $item) {
             $itemTotal = (float) $item['unit_price'] * (int) $item['quantity'];
@@ -287,6 +317,7 @@ class Create extends Component
         }
 
         session()->flash('message', 'Reserva guardada correctamente. Pendiente de girar boleta o factura.');
+
         return redirect()->route('invoices.index');
     }
 
@@ -302,14 +333,14 @@ class Create extends Component
         ]);
 
         $company = Company::first();
-        if (!$company) {
+        if (! $company) {
             session()->flash('error', 'Debe configurar la empresa primero.');
+
             return redirect()->route('invoices.index');
         }
 
-        $serie = $this->invoice_type === 'F' ? 'F001' : 'B001';
-        $lastInvoice = Invoice::withTrashed()->where('serie', $serie)->orderBy('number', 'desc')->first();
-        $number = $lastInvoice ? $lastInvoice->number + 1 : 1;
+        $serie = SeriesService::forInvoiceType($company, $this->invoice_type);
+        $number = SeriesService::next($company, $serie);
 
         $subtotal = $this->calcularSubtotal();
         $igv = $this->calcularIgv();
@@ -343,34 +374,48 @@ class Create extends Component
 
         if ($mode === 'draft') {
             session()->flash('message', 'Borrador guardado correctamente.');
+
             return redirect()->route('invoices.index');
         }
 
         $invoice->load('items');
         $result = SunatService::sendInvoice($invoice);
 
-        if ($result['success']) {
-            $invoice->update(['sunat_status' => $result['accepted'] ? 'accepted' : 'rejected']);
+        if ($result['accepted'] && ! ($result['skipped'] ?? false)) {
+            $acceptedLabel = SunatService::statusLabel($result['status']);
+
             try {
                 $pdfPath = PdfService::generate($invoice);
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('PDF generation failed: ' . $e->getMessage());
+                Log::error('PDF generation failed: '.$e->getMessage());
                 $pdfPath = null;
             }
+
             if ($pdfPath) {
                 $this->dispatch('openPdf', [
                     'url' => route('invoices.pdf.view', $invoice),
                     'redirect' => route('invoices.index'),
                 ]);
             }
-            session()->flash('message', 'Documento emitido correctamente. Estado: ' . $result['description']);
 
-            return redirect()->route('invoices.index');
-        } else {
-            session()->flash('error', 'Error al enviar a SUNAT: ' . $result['description']);
+            session()->flash('message', 'Documento '.$invoice->full_number.' emitido. Estado: '.$acceptedLabel.'.');
 
             return redirect()->route('invoices.index');
         }
+
+        if ($result['accepted']) {
+            session()->flash('message', 'El documento '.$invoice->full_number.' ya estaba aceptado por SUNAT.');
+
+            return redirect()->route('invoices.index');
+        }
+
+        // SUNAT respondió con un CDR negativo o hubo un fallo técnico: el comprobante queda registrado.
+        session()->flash('error', trim(
+            $invoice->full_number.': '.SunatService::statusLabel($result['status']).' — '.$result['description']
+            .(($result['notes'] ?? []) !== [] ? ' ('.implode(' | ', $result['notes']).')' : '')
+        ));
+
+        return redirect()->route('invoices.index');
     }
 
     public function render()

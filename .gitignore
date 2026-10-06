@@ -1,5 +1,13 @@
 /.phpunit.cache
 /node_modules
+# Certificados: nunca versionar claves privadas
+*.p12
+*.pfx
+*.pem
+*.key
+*.crt
+*.cer
+/manual_programador*.pdf
 /public/build
 /public/hot
 /public/storage

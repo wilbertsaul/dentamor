@@ -55,6 +55,11 @@
                         Reservas: {{ $reservasPendientes }}
                     </a>
                 @endif
+                <a href="{{ route('sunat.resumen') }}"
+                   class="px-4 py-2 border border-primary text-primary rounded-lg flex items-center gap-2 font-bold text-body-md hover:opacity-80 transition-opacity">
+                    <span class="material-symbols-outlined">cloud_sync</span>
+                    Comunicaciones SUNAT
+                </a>
                 <a href="{{ route('invoices.create') }}"
                    class="px-4 py-2 bg-primary text-white rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
                     <span class="material-symbols-outlined">add_circle</span>
@@ -146,10 +151,17 @@
                                     <span class="status-badge badge-reserva">Reserva</span>
                                 @elseif($inv->sunat_status === 'accepted')
                                     <span class="status-badge badge-aceptado">Aceptado</span>
-                                @elseif($inv->sunat_status === 'rejected')
-                                    <span class="status-badge badge-rechazado">Rechazado</span>
-                                @elseif($inv->sunat_status === 'error')
-                                    <span class="status-badge badge-rechazado">Error</span>
+                                @elseif($inv->sunat_status === 'accepted_with_observations')
+                                    <span class="status-badge badge-pendiente" title="{{ $inv->sunat_notes }}">Aceptado c/ obs.</span>
+                                @elseif($inv->sunat_status === 'voided')
+                                    <span class="status-badge badge-rechazado">Anulado</span>
+                                @elseif($inv->sunat_status === 'draft')
+                                    <span class="status-badge badge-pendiente">Borrador</span>
+                                @elseif(in_array($inv->sunat_status, ['rejected', 'error'], true))
+                                    <span class="status-badge badge-rechazado"
+                                          title="{{ $inv->sunat_description }}">{{ $inv->sunat_status === 'error' ? 'Error' : 'Rechazado' }}</span>
+                                @elseif($inv->isCreditNote())
+                                    <span class="status-badge badge-pendiente">Nota de crédito</span>
                                 @else
                                     <span class="status-badge badge-pendiente">Pendiente</span>
                                 @endif
@@ -178,11 +190,28 @@
                                             <span class="material-symbols-outlined text-[20px]">code</span>
                                         </a>
                                     @endif
-                                    @if($inv->sunat_status === 'pending')
-                                        <a href="{{ route('invoices.pdf.regenerate', $inv) }}"
+                                    @if(in_array($inv->sunat_status, ['pending', 'error'], true))
+                                        <form action="{{ route('invoices.send', $inv) }}" method="post" class="inline-flex">
+                                            @csrf
+                                            <button type="submit"
+                                                    class="p-1.5 hover:bg-surface-container-highest rounded text-on-surface-variant transition-colors"
+                                                    title="{{ $inv->sunat_status === 'error' ? 'Reintentar envío a SUNAT' : 'Enviar a SUNAT' }}">
+                                                <span class="material-symbols-outlined text-[20px]">send</span>
+                                            </button>
+                                        </form>
+                                    @endif
+                                    @if($inv->isAccepted())
+                                        <a href="{{ route('invoices.nota-credito', $inv) }}"
                                            class="p-1.5 hover:bg-surface-container-highest rounded text-on-surface-variant transition-colors"
-                                           title="Enviar a SUNAT">
-                                            <span class="material-symbols-outlined text-[20px]">send</span>
+                                           title="Emitir nota de crédito">
+                                            <span class="material-symbols-outlined text-[20px]">assignment_return</span>
+                                        </a>
+                                    @endif
+                                    @if($inv->canBeVoided())
+                                        <a href="{{ route('invoices.anular', $inv) }}"
+                                           class="p-1.5 hover:bg-surface-container-highest rounded text-on-surface-variant transition-colors"
+                                           title="Comunicación de baja">
+                                            <span class="material-symbols-outlined text-[20px]">cancel</span>
                                         </a>
                                     @endif
                                     <a href="{{ route('invoices.pdf.regenerate', $inv) }}"

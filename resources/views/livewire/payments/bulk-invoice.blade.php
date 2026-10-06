@@ -5,7 +5,7 @@
             <span class="material-symbols-outlined text-lg mt-0.5">{{ $result['error'] > 0 ? 'warning' : 'check_circle' }}</span>
             <div>
                 <p class="font-semibold">Proceso completado.</p>
-                <p class="text-body-sm">Facturados: {{ $result['success'] }} | Errores: {{ $result['error'] }}</p>
+                <p class="text-body-sm">Facturados: {{ $result['success'] }} | Errores: {{ $result['error'] }} @if($result['error'] > 0)(esos pagos siguen pendientes) @endif</p>
                 @if(!empty($result['errors']))
                     <ul class="mt-2 text-body-sm list-disc list-inside">
                         @foreach($result['errors'] as $error)

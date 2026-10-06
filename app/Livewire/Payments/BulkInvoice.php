@@ -10,8 +10,10 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\PaymentRecord;
 use App\Services\PdfService;
+use App\Services\Sunat\SeriesService;
 use App\Services\SunatService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -575,9 +577,8 @@ class BulkInvoice extends Component
                     ]);
                 }
 
-                $serie = $payment->invoice_type === 'F' ? 'F001' : 'B001';
-                $lastInvoice = Invoice::withTrashed()->where('serie', $serie)->orderBy('number', 'desc')->first();
-                $number = $lastInvoice ? $lastInvoice->number + 1 : 1;
+                $serie = SeriesService::forInvoiceType($payment->invoice_type === 'F' ? 'F' : 'B');
+                $number = SeriesService::next($company, $serie);
 
                 $subtotal = round($payment->amount / 1.18, 2);
                 $igv = round($payment->amount - $subtotal, 2);
@@ -593,6 +594,7 @@ class BulkInvoice extends Component
                     'subtotal' => $subtotal,
                     'igv' => $igv,
                     'total' => $payment->amount,
+                    'sunat_status' => 'pending',
                 ]);
 
                 InvoiceItem::create([
@@ -603,15 +605,22 @@ class BulkInvoice extends Component
                     'subtotal' => $subtotal,
                 ]);
 
+                $invoice->load('items');
+                $result = SunatService::sendInvoice($invoice);
+
+                if (! $result['accepted']) {
+                    // No se marca el pago como facturado: queda pendiente para reintento.
+                    $results['error']++;
+                    $results['errors'][] = "Pago #{$payment->id} ({$invoice->full_number}): "
+                        .SunatService::statusLabel($result['status']).' — '.$result['description'];
+
+                    continue;
+                }
+
                 try {
-                    $invoice->load('items');
-                    SunatService::sendInvoice($invoice);
                     PdfService::generate($invoice);
                 } catch (\Throwable $e) {
-                    $invoice->update([
-                        'sunat_status' => 'error',
-                        'sunat_description' => $e->getMessage(),
-                    ]);
+                    Log::warning("No se pudo generar el PDF de {$invoice->full_number}: " . $e->getMessage());
                 }
 
                 $payment->update([

@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Livewire\Company;
 
 use App\Models\Company;
-use Greenter\See;
-use Greenter\Ws\Services\SunatEndpoints;
-use Illuminate\Support\Facades\Storage;
+use App\Services\Sunat\CertificateService;
+use App\Services\Sunat\ConnectionTest;
+use App\Services\Sunat\SeriesService;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -16,26 +17,84 @@ class Settings extends Component
     use WithFileUploads;
 
     public $company;
+
     public $ruc;
+
     public $business_name;
+
     public $commercial_name;
+
     public $address;
+
+    public $sunat_ubigeo;
+
+    public $sunat_department;
+
+    public $sunat_province;
+
+    public $sunat_district;
+
+    public $sunat_urbanization;
+
+    public $sunat_establishment_code = '0000';
+
+    public $sunat_email;
+
+    public $sunat_phone;
+
     public $sunat_username;
+
     public $sunat_password;
+
+    public $sunat_username_secondary;
+
+    public $sunat_password_secondary;
+
+    public $boleta_serie = 'B002';
+
+    public $factura_serie = 'F002';
+
+    public $nc_boleta_serie = 'BC02';
+
+    public $nc_factura_serie = 'FC02';
+
+    public $boleta_numero = 1;
+
+    public $factura_numero = 1;
+
+    public $certificate_password;
+
     public $certificate;
+
     public $production = false;
+
     public $sunatTest = null;
 
     public function mount()
     {
         $this->company = Company::first();
+
         if ($this->company) {
             $this->ruc = $this->company->ruc;
             $this->business_name = $this->company->business_name;
             $this->commercial_name = $this->company->commercial_name;
             $this->address = $this->company->address;
+            $this->sunat_ubigeo = $this->company->sunat_ubigeo;
+            $this->sunat_department = $this->company->sunat_department;
+            $this->sunat_province = $this->company->sunat_province;
+            $this->sunat_district = $this->company->sunat_district;
+            $this->sunat_urbanization = $this->company->sunat_urbanization;
+            $this->sunat_establishment_code = $this->company->sunat_establishment_code ?: '0000';
+            $this->sunat_email = $this->company->sunat_email;
+            $this->sunat_phone = $this->company->sunat_phone;
             $this->sunat_username = $this->company->sunat_username;
-            $this->sunat_password = $this->company->sunat_password;
+            $this->sunat_username_secondary = $this->company->sunat_username_secondary;
+            $this->boleta_serie = $this->company->boletaSerie();
+            $this->factura_serie = $this->company->facturaSerie();
+            $this->nc_boleta_serie = $this->company->ncBoletaSerie();
+            $this->nc_factura_serie = $this->company->ncFacturaSerie();
+            $this->boleta_numero = SeriesService::peek($this->company, $this->boleta_serie);
+            $this->factura_numero = SeriesService::peek($this->company, $this->factura_serie);
             $this->production = $this->company->production ?? false;
         }
     }
@@ -46,10 +105,23 @@ class Settings extends Component
             'ruc' => 'required|size:11',
             'business_name' => 'required',
             'commercial_name' => 'nullable',
-            'address' => 'nullable',
-            'sunat_username' => 'nullable',
-            'sunat_password' => 'nullable',
-            'certificate' => 'nullable|file|mimes:pem,crt,cer|max:2048',
+            'address' => 'required',
+            'sunat_ubigeo' => 'required|size:6',
+            'sunat_department' => 'required',
+            'sunat_province' => 'required',
+            'sunat_district' => 'required',
+            'sunat_urbanization' => 'nullable',
+            'sunat_establishment_code' => 'required|size:4',
+            'sunat_email' => 'nullable|email',
+            'sunat_phone' => 'nullable|max:30',
+            'sunat_username' => 'required',
+            'sunat_username_secondary' => 'nullable',
+            'boleta_serie' => 'required|string|max:10|regex:/^B\d{3}$/',
+            'factura_serie' => 'required|string|max:10|regex:/^F\d{3}$/',
+            'nc_boleta_serie' => 'required|string|max:10|regex:/^BC\d{2}$/',
+            'nc_factura_serie' => 'required|string|max:10|regex:/^FC\d{2}$/',
+            'certificate' => ['nullable', 'file', 'extensions:'.implode(',', CertificateService::EXTENSIONS), 'max:2048'],
+            'certificate_password' => 'nullable',
             'production' => 'boolean',
         ]);
 
@@ -58,20 +130,53 @@ class Settings extends Component
             'business_name' => $this->business_name,
             'commercial_name' => $this->commercial_name,
             'address' => $this->address,
+            'sunat_ubigeo' => $this->sunat_ubigeo,
+            'sunat_department' => $this->sunat_department,
+            'sunat_province' => $this->sunat_province,
+            'sunat_district' => $this->sunat_district,
+            'sunat_urbanization' => $this->sunat_urbanization,
+            'sunat_establishment_code' => $this->sunat_establishment_code,
+            'sunat_email' => $this->sunat_email,
+            'sunat_phone' => $this->sunat_phone,
             'sunat_username' => $this->sunat_username,
-            'sunat_password' => $this->sunat_password,
+            'sunat_username_secondary' => $this->sunat_username_secondary,
+            'boleta_serie' => strtoupper(trim($this->boleta_serie)),
+            'factura_serie' => strtoupper(trim($this->factura_serie)),
+            'nc_boleta_serie' => strtoupper(trim($this->nc_boleta_serie)),
+            'nc_factura_serie' => strtoupper(trim($this->nc_factura_serie)),
             'production' => $this->production,
         ];
 
+        // Las claves SOL nunca se devuelven al navegador: solo se reemplazan si se escriben.
+        foreach (['sunat_password', 'sunat_password_secondary'] as $secret) {
+            if (filled($this->{$secret})) {
+                $data[$secret] = $this->{$secret};
+            }
+        }
+
         if ($this->certificate) {
-            $data['certificate_path'] = $this->certificate->store('certificates', 'local');
+            try {
+                $data['certificate_path'] = CertificateService::store(
+                    $this->certificate,
+                    $this->certificate_password,
+                    $this->company?->certificate_path
+                );
+                $data['certificate_password'] = null;
+            } catch (\Throwable $e) {
+                throw ValidationException::withMessages(['certificate' => $e->getMessage()]);
+            }
         }
 
         if ($this->company) {
             $this->company->update($data);
+            $this->company = $this->company->fresh();
         } else {
             $this->company = Company::create($data);
         }
+
+        $this->sunat_password = null;
+        $this->sunat_password_secondary = null;
+        $this->certificate_password = null;
 
         session()->flash('message', 'Configuración guardada correctamente.');
         $this->sunatTest = null;
@@ -79,7 +184,11 @@ class Settings extends Component
 
     public function updated($propertyName)
     {
-        if (in_array($propertyName, ['ruc', 'sunat_username', 'sunat_password', 'production', 'certificate'], true)) {
+        if (in_array($propertyName, [
+            'ruc', 'sunat_username', 'sunat_password', 'sunat_username_secondary',
+            'sunat_password_secondary', 'production', 'certificate', 'sunat_ubigeo',
+            'boleta_serie', 'factura_serie', 'nc_boleta_serie', 'nc_factura_serie',
+        ], true)) {
             $this->sunatTest = null;
         }
     }
@@ -91,122 +200,52 @@ class Settings extends Component
         $this->validate([
             'ruc' => 'required|size:11',
             'sunat_username' => 'required',
-            'sunat_password' => 'required',
         ]);
 
-        $environment = $this->production ? 'producción' : 'beta (homologación)';
-        $errors = [];
-        $warnings = [];
-        $details = [];
+        $certificate = $this->certificate ? $this->certificate->get() : null;
 
-        try {
-            $certificate = $this->resolveCertificate();
-
-            if (!$certificate) {
+        if ($certificate) {
+            try {
+                $certificate = CertificateService::normalize($certificate, (string) $this->certificate_password);
+            } catch (\Throwable $e) {
                 $this->sunatTest = [
                     'ok' => false,
-                    'message' => 'Falta el certificado digital.',
-                    'errors' => ['Sube el archivo .pem en la sección "Certificado Digital".'],
+                    'message' => 'No se pudo leer el certificado subido.',
+                    'errors' => [$e->getMessage()],
                     'warnings' => [],
                     'details' => [],
                 ];
+
                 return;
             }
-
-            $pem = $this->extractPem($certificate);
-            $x509 = $pem ? @openssl_x509_read($pem) : false;
-
-            if (!$x509) {
-                $errors[] = 'El archivo no contiene un certificado X.509 legible.';
-            } else {
-                $data = openssl_x509_parse($x509);
-                $from = $data['validFrom_time_t'] ?? null;
-                $to = $data['validTo_time_t'] ?? null;
-
-                if ($from && $to) {
-                    $details[] = 'Certificado vigente del ' . date('d/m/Y', $from) . ' al ' . date('d/m/Y', $to) . '.';
-
-                    if (time() < $from) {
-                        $errors[] = 'El certificado todavía no entra en vigencia (inicia el ' . date('d/m/Y H:i', $from) . ').';
-                    } elseif (time() > $to) {
-                        $errors[] = 'El certificado venció el ' . date('d/m/Y H:i', $to) . '; SUNAT lo rechazará.';
-                    } elseif ($to - time() < 2592000) {
-                        $warnings[] = 'El certificado vence en menos de 30 días.';
-                    }
-                }
-
-                $holder = trim($data['name'] ?? '');
-                $details[] = 'Titular: ' . ($holder !== '' ? $holder : 'no informado') . '.';
-
-                $subject = preg_replace('/\s+/', '', $holder . ' ' . ($data['subjectAltName'] ?? ''));
-                if ($subject !== '' && !str_contains($subject, $this->ruc)) {
-                    $warnings[] = 'El titular del certificado no menciona el RUC ' . $this->ruc . '; SUNAT exige que el certificado esté emitido para ese RUC.';
-                }
-            }
-
-            try {
-                $see = new See();
-                $see->setCertificate($certificate);
-                $see->setClaveSOL($this->ruc, $this->sunat_username, $this->sunat_password);
-                $see->setCachePath(storage_path('app/sunat/cache'));
-                $see->setService($this->production ? SunatEndpoints::FE_PRODUCCION : SunatEndpoints::FE_BETA);
-
-                $status = $see->getStatus(null);
-
-                if ($status->isSuccess()) {
-                    $details[] = 'SUNAT respondió afirmativamente (' . $environment . ').';
-                } else {
-                    $error = $status->getError();
-                    $code = (string) ($error?->getCode() ?? '');
-
-                    if ($code === '0127') {
-                        $details[] = 'SUNAT recibió y firmó correctamente la solicitud (' . $environment . '). Nota: este chequeo confirma el certificado y la conectividad, no la validez de la clave SOL.';
-                    } else {
-                        $message = trim(($code ? '[' . $code . '] ' : '') . ($error?->getMessage() ?? ''));
-                        $errors[] = $message !== ''
-                            ? 'SUNAT respondió con error: ' . $message
-                            : 'SUNAT no respondió correctamente al saludo de prueba.';
-                    }
-                }
-            } catch (\Throwable $e) {
-                $errors[] = 'No se pudo completar la conexión con SUNAT: ' . $e->getMessage();
-            }
-        } catch (\Throwable $e) {
-            $errors[] = $e->getMessage();
         }
 
-        $this->sunatTest = [
-            'ok' => empty($errors),
-            'message' => empty($errors)
-                ? 'Configuración lista para emitir en ' . $environment . '.'
-                : 'La configuración tiene ' . count($errors) . ' problema(s) que corregí.',
-            'errors' => $errors,
-            'warnings' => $warnings,
-            'details' => $details,
-        ];
-    }
+        $company = $this->company ? clone $this->company : new Company;
+        $company->forceFill([
+            'ruc' => $this->ruc,
+            'sunat_username' => $this->sunat_username,
+            'production' => $this->production,
+        ]);
 
-    protected function resolveCertificate(): ?string
-    {
-        if ($this->certificate) {
-            return $this->certificate->get();
+        if (filled($this->address)) {
+            $company->forceFill(['address' => $this->address]);
         }
 
-        if ($this->company && $this->company->certificate_path) {
-            $content = Storage::disk('local')->get($this->company->certificate_path);
-            return $content ?: null;
+        if (filled($this->sunat_ubigeo)) {
+            $company->forceFill([
+                'sunat_ubigeo' => $this->sunat_ubigeo,
+                'sunat_department' => $this->sunat_department,
+                'sunat_province' => $this->sunat_province,
+                'sunat_district' => $this->sunat_district,
+            ]);
         }
 
-        return null;
-    }
-
-    protected function extractPem(string $content): ?string
-    {
-        if (preg_match('/-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/s', $content, $matches)) {
-            return $matches[0];
-        }
-
-        return null;
+        $this->sunatTest = ConnectionTest::run($company, $certificate, [
+            'sunat_username' => $this->sunat_username,
+            'sunat_password' => filled($this->sunat_password) ? $this->sunat_password : null,
+            'sunat_username_secondary' => $this->sunat_username_secondary ?: null,
+            'sunat_password_secondary' => filled($this->sunat_password_secondary) ? $this->sunat_password_secondary : null,
+        ]);
     }
 
     public function render()
