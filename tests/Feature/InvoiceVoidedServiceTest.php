@@ -63,6 +63,37 @@ class InvoiceVoidedServiceTest extends TestCase
         $this->assertSame('voided', $invoice->fresh()->sunat_status);
     }
 
+    public function test_una_operacion_queda_ligada_a_sus_comprobantes(): void
+    {
+        $invoice = $this->acceptedInvoice('B');
+        $operation = $this->unlinkedOperation($invoice, SunatOperation::TYPE_SUMMARY, true);
+
+        $this->assertNull($invoice->fresh()->sunat_operation_id);
+
+        SummaryService::linkInvoices($operation, [$invoice->id]);
+
+        $this->assertSame($operation->id, $invoice->fresh()->sunat_operation_id);
+
+        SummaryService::markVoidedDocuments($operation->fresh(), 'accepted');
+
+        $this->assertSame('voided', $invoice->fresh()->sunat_status);
+    }
+
+    public function test_una_boleta_ligada_deja_de_estar_pendiente(): void
+    {
+        $company = $this->company();
+        $linked = $this->acceptedInvoice('B', $company, 1);
+        $pending = $this->acceptedInvoice('B', $company, 2);
+        $operation = $this->unlinkedOperation($linked, SunatOperation::TYPE_SUMMARY, false);
+
+        SummaryService::linkInvoices($operation, [$linked->id]);
+
+        $ids = SummaryService::pendingFor($company)->pluck('id');
+
+        $this->assertFalse($ids->contains($linked->id));
+        $this->assertTrue($ids->contains($pending->id));
+    }
+
     public function test_un_resumen_diario_normal_no_anula_sus_boletas(): void
     {
         $invoice = $this->acceptedInvoice('B');
@@ -85,7 +116,16 @@ class InvoiceVoidedServiceTest extends TestCase
 
     private function operation(Invoice $invoice, string $type, bool $voids): SunatOperation
     {
-        $operation = SunatOperation::create([
+        $operation = $this->unlinkedOperation($invoice, $type, $voids);
+
+        SummaryService::linkInvoices($operation, [$invoice->id]);
+
+        return $operation;
+    }
+
+    private function unlinkedOperation(Invoice $invoice, string $type, bool $voids): SunatOperation
+    {
+        return SunatOperation::create([
             'company_id' => $invoice->company_id,
             'type' => $type,
             'reference' => $type.'-20261003-1',
@@ -95,17 +135,13 @@ class InvoiceVoidedServiceTest extends TestCase
             'voids_documents' => $voids,
             'documents_count' => 1,
         ]);
-
-        $invoice->forceFill(['sunat_operation_id' => $operation->id])->save();
-
-        return $operation;
     }
 
-    private function acceptedInvoice(string $type): Invoice
+    private function company(): Company
     {
         $this->rucSuffix++;
 
-        $company = Company::create([
+        return Company::create([
             'ruc' => (string) $this->rucSuffix,
             'business_name' => 'DENTAMOR COMPANY CLINICA ODONTOLOGICA SOCIEDAD ANONIMA CERRADA',
             'sunat_username' => '72901015',
@@ -117,12 +153,17 @@ class InvoiceVoidedServiceTest extends TestCase
             'address' => 'AV. SIEMPRE VIVA 123',
             'production' => true,
         ]);
+    }
+
+    private function acceptedInvoice(string $type, ?Company $company = null, int $number = 1): Invoice
+    {
+        $company ??= $this->company();
 
         return Invoice::create([
             'company_id' => $company->id,
             'invoice_type' => $type,
             'serie' => $type === 'F' ? 'F002' : 'B002',
-            'number' => 1,
+            'number' => $number,
             'issue_date' => now()->toDateString(),
             'currency' => 'PEN',
             'subtotal' => 100,

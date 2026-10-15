@@ -234,6 +234,24 @@ class SummaryService
         $operation->invoices()->update(['sunat_status' => 'voided']);
     }
 
+    /**
+     * Liga los comprobantes incluidos en la comunicación con su operación SUNAT.
+     * Sin este vínculo, markVoidedDocuments() no puede dejarlos como anulados y
+     * pendingFor() vuelve a resumir boletas ya informadas.
+     *
+     * @param  array<int, int|string>  $invoiceIds
+     */
+    public static function linkInvoices(SunatOperation $operation, array $invoiceIds): void
+    {
+        if ($invoiceIds === []) {
+            return;
+        }
+
+        Invoice::query()
+            ->whereIn('id', $invoiceIds)
+            ->update(['sunat_operation_id' => $operation->id]);
+    }
+
     public static function pendingFor(Company $company, ?Carbon $date = null): Collection
     {
         $date = ($date ?? now())->startOfDay();
@@ -354,7 +372,7 @@ class SummaryService
             'ticket' => $result->getTicket(),
         ])->save();
 
-        $operation->invoices()->update(['sunat_operation_id' => $operation->id]);
+        static::linkInvoices($operation, $invoiceIds);
 
         SunatLogger::info('Resumen enviado a SUNAT', [
             'reference' => $operation->reference,
