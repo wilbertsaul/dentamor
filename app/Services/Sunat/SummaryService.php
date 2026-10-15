@@ -22,7 +22,12 @@ class SummaryService
      */
     public const MAX_DOCUMENTS = 500;
 
-    public const TICKET_PENDING_CODES = ['98'];
+    /**
+     * Códigos de ticket que SUNAT devuelve mientras el proceso sigue en curso.
+     * Llegan con ceros a la izquierda (p. ej. "0098"), por eso se comparan
+     * numéricamente en isPendingTicketCode().
+     */
+    public const TICKET_PENDING_CODES = [98, 99];
 
     /**
      * @param  Collection<int, Invoice>  $invoices
@@ -168,6 +173,15 @@ class SummaryService
         return static::dispatch($operation, $summary, [$invoice->id], 'RC');
     }
 
+    /**
+     * SUNAT puede devolver el código con ceros a la izquierda ("0098"), así que
+     * la comparación es numérica para no confundir un ticket en proceso con error.
+     */
+    public static function isPendingTicketCode(?string $code): bool
+    {
+        return in_array((int) $code, static::TICKET_PENDING_CODES, true);
+    }
+
     public static function refresh(SunatOperation $operation): SunatOperation
     {
         if (blank($operation->ticket)) {
@@ -179,7 +193,7 @@ class SummaryService
         $see = SeeFactory::make($company, true);
         $status = $see->getStatus($operation->ticket);
 
-        if (in_array((string) $status->getCode(), static::TICKET_PENDING_CODES, true)) {
+        if (static::isPendingTicketCode($status->getCode())) {
             $operation->forceFill(['status' => 'processing'])->save();
 
             return $operation;

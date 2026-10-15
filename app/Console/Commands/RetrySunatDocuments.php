@@ -88,9 +88,19 @@ class RetrySunatDocuments extends Command
 
     private function refreshOperations(bool $dryRun): int
     {
+        $pendingCodes = implode(', ', SummaryService::TICKET_PENDING_CODES);
+
         $operations = SunatOperation::query()
-            ->whereIn('status', ['sent', 'processing'])
             ->whereNotNull('ticket')
+            ->where(function ($query) use ($pendingCodes): void {
+                $query->whereIn('status', ['sent', 'processing'])
+                    ->orWhere(function ($query) use ($pendingCodes): void {
+                        // Recupera operaciones que quedaron en error solo porque el
+                        // ticket aún estaba en proceso (p. ej. "0098" sin normalizar).
+                        $query->where('status', ResponseMapper::ERROR)
+                            ->whereRaw("CAST(code AS UNSIGNED) IN ({$pendingCodes})");
+                    });
+            })
             ->orderBy('id')
             ->limit(50)
             ->get();
