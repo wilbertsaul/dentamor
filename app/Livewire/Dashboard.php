@@ -38,6 +38,7 @@ class Dashboard extends Component
                 now()->subDays(29)->startOfDay()->toDateString(),
                 now()->endOfDay()->toDateString(),
             ])
+            ->whereIn('sunat_status', ['accepted', 'pending'])
             ->selectRaw('issue_date, COALESCE(SUM(total), 0) as total')
             ->groupBy('issue_date')
             ->pluck('total', 'issue_date');
@@ -59,7 +60,9 @@ class Dashboard extends Component
             ->whereYear('issue_date', now()->year)
             ->count();
 
-        $hoyFacturado = (float) Invoice::whereDate('issue_date', $today)->sum('total');
+        $hoyFacturado = (float) Invoice::whereDate('issue_date', $today)
+            ->whereIn('sunat_status', ['accepted', 'pending'])
+            ->sum('total');
         $hoyReservas = (float) Invoice::where('is_reservation', true)->whereDate('created_at', $today)->sum('total');
 
         return view('livewire.dashboard', [
@@ -67,13 +70,18 @@ class Dashboard extends Component
             'totalAmountToday' => $hoyFacturado,
             'hoyFacturado' => $hoyFacturado,
             'hoyReservas' => $hoyReservas,
-            'hoyTotal' => $hoyFacturado + $hoyReservas,
-            'recentInvoices' => Invoice::with('client')->latest()->take(6)->get(),
+            'hoyTotal' => $hoyFacturado,
+            'recentInvoices' => Invoice::with('client')
+                ->where('sunat_status', 'accepted')
+                ->latest()
+                ->take(6)
+                ->get(),
             'reservasPendientes' => Invoice::where('is_reservation', true)->count(),
             'reservasPendientesMonto' => Invoice::where('is_reservation', true)->sum('total'),
             'sunatAccepted' => Invoice::where('sunat_status', 'accepted')->count(),
             'sunatPending' => Invoice::where('sunat_status', 'pending')->count(),
             'sunatRejected' => Invoice::whereIn('sunat_status', ['rejected', 'error'])->count(),
+            'sunatVoided' => Invoice::where('sunat_status', 'voided')->count(),
             'acceptedMonth' => $acceptedMonth,
             'monthSum' => $monthSum,
             'monthVariation' => $monthVariation,

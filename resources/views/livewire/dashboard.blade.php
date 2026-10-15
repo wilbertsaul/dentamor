@@ -124,14 +124,14 @@
                 <span class="text-xs font-bold text-primary-dark">Máx: S/ {{ number_format($chartMax, 2) }}</span>
             </div>
 
-            <div class="h-64 bg-surface-container-low rounded-xl border border-outline-variant/60 p-5 flex flex-col justify-between relative overflow-hidden">
-                <div class="w-full flex-1 flex items-end justify-between gap-1 pt-6 pb-2 px-1">
+            <div class="flex-1 bg-surface-container-low rounded-xl border border-outline-variant/60 p-5 flex flex-col justify-between relative overflow-hidden" style="min-height: 16rem">
+                <div class="w-full flex-1 flex justify-between gap-1 pt-6 pb-2 px-1">
                     @foreach($chartDays as $day)
                         @php
                             $height = $day['total'] > 0 ? max(4, round($day['total'] / $chartMax * 100)) : 1.5;
                         @endphp
                         <div class="flex-1 flex flex-col items-center gap-1 group">
-                            <div class="w-full flex items-end justify-center h-full">
+                            <div class="w-full flex-1 flex items-end justify-center">
                                 <div class="w-2 {{ $day['is_today'] ? 'bg-gradient-to-t from-secondary to-primary shadow-sm' : 'bg-primary/40 group-hover:bg-primary/70' }} rounded-t-sm transition-colors"
                                      style="height: {{ $height }}%"
                                      title="{{ $day['full'] }}: S/ {{ number_format($day['total'], 2) }}"></div>
@@ -145,7 +145,7 @@
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-primary"></span> Periodo actual ({{ now()->translatedFormat('F Y') }})</span>
                     <div class="text-right">
                         <span class="font-bold text-primary-dark">Hoy: S/ {{ number_format($hoyTotal ?? $totalAmountToday, 2) }}</span>
-                        <span class="block text-on-surface-variant font-normal">{{ number_format($hoyFacturado ?? 0, 2) }} comprobantes + {{ number_format($hoyReservas ?? 0, 2) }} reservas</span>
+                        <span class="block text-on-surface-variant font-normal">{{ number_format($hoyFacturado ?? 0, 2) }} acept./pend. + {{ number_format($hoyReservas ?? 0, 2) }} reservas</span>
                     </div>
                 </div>
             </div>
@@ -195,6 +195,19 @@
                             </div>
                         </div>
                         <span class="text-xl font-extrabold font-headline-md text-red-600">{{ $sunatRejected }}</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[20px]">block</span>
+                            </div>
+                            <div>
+                                <p class="font-bold text-xs text-on-surface">Anulados</p>
+                                <p class="text-[10px] text-on-surface-variant">Dados de baja en SUNAT</p>
+                            </div>
+                        </div>
+                        <span class="text-xl font-extrabold font-headline-md text-slate-600">{{ $sunatVoided }}</span>
                     </div>
                 </div>
             </div>
