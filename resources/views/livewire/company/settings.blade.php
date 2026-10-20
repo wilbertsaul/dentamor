@@ -174,6 +174,101 @@
         </div>
 
         <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-primary text-xl">chat</span>
+                <h3 class="text-body-lg font-semibold text-on-surface">WhatsApp (Meta Cloud API)</h3>
+            </div>
+            <p class="text-body-sm text-on-surface-variant mb-5">
+                Envía el comprobante por WhatsApp cuando SUNAT lo acepta. Requiere una plantilla aprobada en Meta.
+            </p>
+
+            <div class="border-b border-outline-variant pb-4 mb-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-body-md font-medium text-on-surface">Envío automático</div>
+                        <div class="text-body-sm text-on-surface-variant mt-0.5">Al aceptarse una boleta, factura o nota de crédito.</div>
+                    </div>
+                    <button type="button"
+                            wire:click="$set('whatsapp_enabled', {{ $whatsapp_enabled ? 'false' : 'true' }})"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {{ $whatsapp_enabled ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-surface-container-highest' }}">
+                        <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform {{ $whatsapp_enabled ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-label-md text-on-surface-variant">Phone Number ID</label>
+                    <input type="text" wire:model="whatsapp_phone_number_id"
+                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
+                    @error('whatsapp_phone_number_id') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="text-label-md text-on-surface-variant">Business Account ID (opcional)</label>
+                    <input type="text" wire:model="whatsapp_business_account_id"
+                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
+                    @error('whatsapp_business_account_id') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-label-md text-on-surface-variant">Token de acceso permanente</label>
+                    <input type="password" wire:model="whatsapp_token" autocomplete="new-password"
+                           placeholder="{{ $company?->whatsapp_token ? '•••••••• (guardado)' : '' }}"
+                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
+                    <p class="mt-1 text-xs text-on-surface-variant">Se guarda cifrado. Déjalo vacío para conservar el actual.</p>
+                    @error('whatsapp_token') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="text-label-md text-on-surface-variant">Versión de la API</label>
+                    <input type="text" wire:model="whatsapp_api_version" maxlength="10"
+                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="v21.0">
+                    @error('whatsapp_api_version') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="text-label-md text-on-surface-variant">Idioma de la plantilla</label>
+                    <input type="text" wire:model="whatsapp_template_lang" maxlength="10"
+                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="es">
+                    @error('whatsapp_template_lang') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-label-md text-on-surface-variant">Nombre de la plantilla</label>
+                    <input type="text" wire:model="whatsapp_template_name" maxlength="100"
+                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="comprobante_emitido">
+                    <p class="mt-1 text-xs text-on-surface-variant">
+                        Variables en orden: 1) nombre del cliente, 2) tipo y número, 3) total, 4) enlace al PDF.
+                    </p>
+                    @error('whatsapp_template_name') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-end gap-3">
+                <div class="flex-1 min-w-[220px]">
+                    <label class="text-label-md text-on-surface-variant">Teléfono de prueba</label>
+                    <input type="text" wire:model="whatsapp_test_phone" placeholder="Ej: 987654321"
+                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
+                    @error('whatsapp_test_phone') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                </div>
+                <button type="button" wire:click="testWhatsApp" wire:loading.attr="disabled"
+                        class="px-4 py-3 border border-primary text-primary-dark rounded-xl text-body-sm font-semibold flex items-center gap-2 hover:opacity-80 transition-opacity disabled:opacity-50">
+                    <span class="material-symbols-outlined text-base">send</span>
+                    Probar envío
+                </button>
+            </div>
+            <div wire:loading wire:target="testWhatsApp" class="mt-2 text-body-sm text-on-surface-variant">Enviando mensaje de prueba...</div>
+
+            @if($whatsappTest)
+                <div class="mt-4 px-4 py-3 rounded-xl border flex items-start gap-2 {{ $whatsappTest['ok'] ? 'bg-secondary-fixed/30 border-secondary/20 text-secondary' : 'bg-error-container/30 border-error/20 text-error' }}">
+                    <span class="material-symbols-outlined text-lg">{{ $whatsappTest['ok'] ? 'verified' : 'error' }}</span>
+                    <div class="space-y-1">
+                        <p class="text-body-sm font-semibold">{{ $whatsappTest['message'] }}</p>
+                        @if($whatsappTest['phone'])
+                            <p class="text-body-sm opacity-90">Destino: {{ $whatsappTest['phone'] }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-5">
                 <span class="material-symbols-outlined text-primary text-xl">badge</span>
                 <h3 class="text-body-lg font-semibold text-on-surface">Certificado Digital</h3>

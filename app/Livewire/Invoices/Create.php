@@ -13,6 +13,7 @@ use App\Services\PdfService;
 use App\Services\Sunat\SeriesService;
 use App\Services\SunatLookupService;
 use App\Services\SunatService;
+use App\Services\WhatsApp\WhatsAppService;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
@@ -43,6 +44,10 @@ class Create extends Component
     public $clientAddress = '';
 
     public $clientDoc = '';
+
+    public $customer_phone = '';
+
+    public $customer_email = '';
 
     public $isLookingUp = false;
 
@@ -147,6 +152,8 @@ class Create extends Component
         $this->clientName = $client->name;
         $this->clientAddress = $client->address ?? '';
         $this->clientDoc = $client->doc_number;
+        $this->customer_phone = $client->phone ?? '';
+        $this->customer_email = $client->email ?? '';
     }
 
     public function updatedInvoiceType()
@@ -155,6 +162,8 @@ class Create extends Component
         $this->clientName = '';
         $this->clientAddress = '';
         $this->clientDoc = '';
+        $this->customer_phone = '';
+        $this->customer_email = '';
         $this->clientSource = '';
         $this->searchDoc = '';
     }
@@ -326,6 +335,8 @@ class Create extends Component
         $this->validate([
             'client_id' => 'required|exists:clients,id',
             'invoice_type' => 'required|in:F,B',
+            'customer_phone' => 'nullable|string|max:20',
+            'customer_email' => 'nullable|email|max:255',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required',
             'items.*.quantity' => 'required|numeric|min:1',
@@ -358,6 +369,8 @@ class Create extends Component
             'igv' => $igv,
             'total' => $total,
             'sunat_status' => $mode === 'draft' ? 'draft' : 'pending',
+            'customer_phone' => filled($this->customer_phone) ? $this->customer_phone : null,
+            'customer_email' => filled($this->customer_email) ? trim((string) $this->customer_email) : null,
         ]);
 
         foreach ($this->items as $item) {
@@ -398,6 +411,8 @@ class Create extends Component
                 ]);
             }
 
+            $this->syncContactAndNotify($invoice, $company);
+
             session()->flash('message', 'Documento '.$invoice->full_number.' emitido. Estado: '.$acceptedLabel.'.');
 
             return redirect()->route('invoices.index');
@@ -416,6 +431,37 @@ class Create extends Component
         ));
 
         return redirect()->route('invoices.index');
+    }
+
+    private function syncContactAndNotify(Invoice $invoice, Company $company): void
+    {
+        $email = trim((string) $this->customer_email);
+
+        if ($invoice->client_id) {
+            $updates = [];
+
+            if (filled($this->customer_phone)) {
+                $updates['phone'] = $this->customer_phone;
+            }
+
+            if ($email !== '') {
+                $updates['email'] = $email;
+            }
+
+            if ($updates !== []) {
+                $invoice->client()->update($updates);
+            }
+        }
+
+        if (blank($this->customer_phone) || ! WhatsAppService::isConfigured($company)) {
+            return;
+        }
+
+        try {
+            WhatsAppService::sendInvoice($invoice->fresh(['client', 'company']), $this->customer_phone);
+        } catch (\Throwable $e) {
+            Log::warning('WhatsApp send failed: '.$e->getMessage());
+        }
     }
 
     public function render()

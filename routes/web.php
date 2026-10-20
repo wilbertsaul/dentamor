@@ -17,12 +17,21 @@ use App\Models\Invoice;
 use App\Services\PdfService;
 use App\Services\Sunat\ResponseMapper;
 use App\Services\SunatService;
+use App\Services\WhatsApp\WhatsAppService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
+
+Route::get('/invoices/{invoice}/pdf-public', function (Invoice $invoice) {
+    if (! $invoice->pdf_path || ! Storage::disk('local')->exists($invoice->pdf_path)) {
+        PdfService::generate($invoice);
+    }
+
+    return Storage::disk('local')->response($invoice->pdf_path);
+})->middleware('signed')->name('invoices.pdf.public');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
@@ -39,29 +48,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/payments/bulk', PaymentsBulk::class)->name('payments.bulk');
 
     Route::get('/invoices/{invoice}/pdf', function (Invoice $invoice) {
-        if (!$invoice->pdf_path) {
+        if (! $invoice->pdf_path) {
             PdfService::generate($invoice);
         }
+
         return Storage::disk('local')->download($invoice->pdf_path);
     })->name('invoices.pdf');
 
     Route::get('/invoices/{invoice}/pdf-view', function (Invoice $invoice) {
-        if (!$invoice->pdf_path) {
+        if (! $invoice->pdf_path) {
             PdfService::generate($invoice);
         }
+
         return Storage::disk('local')->response($invoice->pdf_path);
     })->name('invoices.pdf.view');
 
     Route::get('/invoices/{invoice}/pdf-regenerate', function (Invoice $invoice) {
         PdfService::generate($invoice);
+
         return redirect()->back()->with('message', 'PDF regenerado.');
     })->name('invoices.pdf.regenerate');
 
     Route::get('/invoices/{invoice}/xml', function (Invoice $invoice) {
-        if (!$invoice->xml_path) {
+        if (! $invoice->xml_path) {
             return redirect()->back()->with('error', 'XML no disponible.');
         }
-        return Storage::disk('local')->download($invoice->xml_path, $invoice->full_number . '.xml');
+
+        return Storage::disk('local')->download($invoice->xml_path, $invoice->full_number.'.xml');
     })->name('invoices.xml');
 
     Route::post('/invoices/{invoice}/enviar', function (Invoice $invoice) {
@@ -81,6 +94,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             trim($invoice->full_number.': '.ResponseMapper::label($result['status']).' — '.($result['description'] ?? 'sin respuesta'))
         );
     })->name('invoices.send');
+
+    Route::post('/invoices/{invoice}/whatsapp', function (Invoice $invoice) {
+        abort_if($invoice->is_reservation, 422, 'Una reserva no puede enviarse por WhatsApp.');
+
+        $result = WhatsAppService::sendInvoice($invoice->loadMissing(['company', 'client', 'items']));
+
+        return redirect()->back()->with(
+            $result['ok'] ? 'message' : 'error',
+            trim($invoice->full_number.': '.$result['message'])
+        );
+    })->name('invoices.whatsapp');
 });
 
 Route::middleware('auth')->group(function () {

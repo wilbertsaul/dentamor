@@ -11,6 +11,7 @@ use App\Services\PdfService;
 use App\Services\Sunat\ResponseMapper;
 use App\Services\Sunat\SeriesService;
 use App\Services\SunatService;
+use App\Services\WhatsApp\WhatsAppService;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
@@ -24,6 +25,10 @@ class CreditNote extends Component
     public $items = [];
 
     public $errorMessage = '';
+
+    public $customer_phone = '';
+
+    public $customer_email = '';
 
     public function mount(Invoice $invoice)
     {
@@ -40,6 +45,9 @@ class CreditNote extends Component
                 'unit_price' => (float) $item->unit_price,
             ])
             ->all();
+
+        $this->customer_phone = $invoice->customer_phone ?: ($invoice->client?->phone ?? '');
+        $this->customer_email = $invoice->customer_email ?: ($invoice->client?->email ?? '');
     }
 
     public function updatedItems(): void
@@ -81,6 +89,8 @@ class CreditNote extends Component
 
         $this->validate([
             'motivo' => 'required|max:500',
+            'customer_phone' => 'nullable|string|max:20',
+            'customer_email' => 'nullable|email|max:255',
         ]);
 
         $company = Company::first();
@@ -127,6 +137,8 @@ class CreditNote extends Component
             'sunat_document_type' => Invoice::TYPE_NOTA_CREDITO,
             'related_invoice_id' => $this->invoice->id,
             'sunat_status' => 'pending',
+            'customer_phone' => filled($this->customer_phone) ? $this->customer_phone : null,
+            'customer_email' => filled($this->customer_email) ? trim((string) $this->customer_email) : null,
         ]);
 
         foreach ($lines as $line) {
@@ -156,12 +168,45 @@ class CreditNote extends Component
             Log::warning('No se pudo generar el PDF de la nota de crédito: '.$e->getMessage());
         }
 
+        $this->syncContactAndNotify($creditNote, $company);
+
         session()->flash(
             'message',
             'Nota de crédito '.$creditNote->full_number.' emitida sobre '.$this->invoice->full_number.'. Estado: '.ResponseMapper::label($result['status']).'.'
         );
 
         return redirect()->route('invoices.index');
+    }
+
+    private function syncContactAndNotify(Invoice $creditNote, Company $company): void
+    {
+        $email = trim((string) $this->customer_email);
+
+        if ($creditNote->client_id) {
+            $updates = [];
+
+            if (filled($this->customer_phone)) {
+                $updates['phone'] = $this->customer_phone;
+            }
+
+            if ($email !== '') {
+                $updates['email'] = $email;
+            }
+
+            if ($updates !== []) {
+                $creditNote->client()->update($updates);
+            }
+        }
+
+        if (blank($this->customer_phone) || ! WhatsAppService::isConfigured($company)) {
+            return;
+        }
+
+        try {
+            WhatsAppService::sendInvoice($creditNote->fresh(['client', 'company']), $this->customer_phone);
+        } catch (\Throwable $e) {
+            Log::warning('WhatsApp send failed: '.$e->getMessage());
+        }
     }
 
     public function render()

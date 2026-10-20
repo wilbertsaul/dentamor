@@ -14,12 +14,16 @@ class Company extends Model
         'sunat_urbanization', 'sunat_establishment_code', 'sunat_email', 'sunat_phone',
         'sunat_username_secondary', 'sunat_password_secondary',
         'boleta_serie', 'factura_serie', 'nc_boleta_serie', 'nc_factura_serie',
+        'whatsapp_enabled', 'whatsapp_phone_number_id', 'whatsapp_business_account_id',
+        'whatsapp_token', 'whatsapp_api_version', 'whatsapp_template_name',
+        'whatsapp_template_lang',
     ];
 
     protected $hidden = [
         'sunat_password',
         'sunat_password_secondary',
         'certificate_password',
+        'whatsapp_token',
     ];
 
     protected $casts = [
@@ -27,6 +31,8 @@ class Company extends Model
         'sunat_password' => 'encrypted',
         'sunat_password_secondary' => 'encrypted',
         'certificate_password' => 'encrypted',
+        'whatsapp_enabled' => 'boolean',
+        'whatsapp_token' => 'encrypted',
     ];
 
     public function invoices()
@@ -112,5 +118,23 @@ class Company extends Model
     public function ncFacturaSerie(): string
     {
         return $this->nc_factura_serie ?: 'FC02';
+    }
+
+    public function whatsappConfigured(): bool
+    {
+        return (bool) $this->whatsapp_enabled
+            && filled($this->whatsapp_phone_number_id)
+            && filled($this->whatsapp_token)
+            && filled($this->whatsapp_template_name);
+    }
+
+    public function whatsappApiVersion(): string
+    {
+        return $this->whatsapp_api_version ?: config('whatsapp.api_version', 'v21.0');
+    }
+
+    public function whatsappTemplateLang(): string
+    {
+        return $this->whatsapp_template_lang ?: config('whatsapp.template_lang', 'es');
     }
 }

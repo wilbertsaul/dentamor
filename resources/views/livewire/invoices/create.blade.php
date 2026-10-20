@@ -101,6 +101,30 @@
                         </div>
                     </div>
 
+                    @if($invoice_type !== 'R')
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-label-md text-on-surface-variant block mb-1">WhatsApp (opcional)</label>
+                                <input type="text" wire:model.blur="customer_phone"
+                                       placeholder="Ej: 987654321"
+                                       class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary outline-none transition-all">
+                                <p class="text-xs text-outline mt-1">Si lo indicas, el comprobante se envía al ser aceptado por SUNAT.</p>
+                                @error('customer_phone')
+                                    <p class="text-sm text-error mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="text-label-md text-on-surface-variant block mb-1">Correo (opcional)</label>
+                                <input type="email" wire:model.blur="customer_email"
+                                       placeholder="cliente@correo.com"
+                                       class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary outline-none transition-all">
+                                @error('customer_email')
+                                    <p class="text-sm text-error mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    @endif
+
                     @error('client_id')
                         <p class="text-sm text-error flex items-center gap-1">
                             <span class="material-symbols-outlined text-[16px]">error</span>

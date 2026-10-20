@@ -12,6 +12,7 @@ use App\Services\PdfService;
 use App\Services\Sunat\SeriesService;
 use App\Services\SunatLookupService;
 use App\Services\SunatService;
+use App\Services\WhatsApp\WhatsAppService;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
@@ -31,6 +32,10 @@ class Girar extends Component
 
     public $clientDoc = '';
 
+    public $customer_phone = '';
+
+    public $customer_email = '';
+
     public $isLookingUp = false;
 
     public $clientSource = '';
@@ -48,6 +53,8 @@ class Girar extends Component
             $this->clientName = $reservation->client->name;
             $this->clientAddress = $reservation->client->address ?? '';
             $this->clientDoc = $reservation->client->doc_number;
+            $this->customer_phone = $reservation->client->phone ?? '';
+            $this->customer_email = $reservation->client->email ?? '';
             $this->searchDoc = $reservation->client->doc_type === 'N' ? '' : $reservation->client->doc_number;
         }
     }
@@ -59,6 +66,8 @@ class Girar extends Component
         $this->clientName = '';
         $this->clientAddress = '';
         $this->clientDoc = '';
+        $this->customer_phone = '';
+        $this->customer_email = '';
         $this->clientSource = '';
     }
 
@@ -136,6 +145,11 @@ class Girar extends Component
 
     public function girar()
     {
+        $this->validate([
+            'customer_phone' => 'nullable|string|max:20',
+            'customer_email' => 'nullable|email|max:255',
+        ]);
+
         $total = (float) $this->reservation->total;
         $isFactura = $this->invoice_type === 'F';
         $requiresDocument = $isFactura || $total > 700;
@@ -197,6 +211,8 @@ class Girar extends Component
                 : Invoice::TYPE_BOLETA,
             'sunat_status' => 'pending',
             'is_reservation' => false,
+            'customer_phone' => filled($this->customer_phone) ? $this->customer_phone : null,
+            'customer_email' => filled($this->customer_email) ? trim((string) $this->customer_email) : null,
         ]);
 
         foreach ($this->reservation->items as $item) {
@@ -237,6 +253,8 @@ class Girar extends Component
             'sunat_status' => 'converted',
         ])->save();
 
+        $this->syncContactAndNotify($invoice, $company);
+
         if ($pdfPath) {
             $this->dispatch('openPdf', [
                 'url' => route('invoices.pdf.view', $invoice),
@@ -258,6 +276,39 @@ class Girar extends Component
         $this->clientName = $client->name;
         $this->clientAddress = $client->address ?? '';
         $this->clientDoc = $client->doc_number;
+        $this->customer_phone = $client->phone ?? '';
+        $this->customer_email = $client->email ?? '';
+    }
+
+    private function syncContactAndNotify(Invoice $invoice, Company $company): void
+    {
+        $email = trim((string) $this->customer_email);
+
+        if ($invoice->client_id) {
+            $updates = [];
+
+            if (filled($this->customer_phone)) {
+                $updates['phone'] = $this->customer_phone;
+            }
+
+            if ($email !== '') {
+                $updates['email'] = $email;
+            }
+
+            if ($updates !== []) {
+                $invoice->client()->update($updates);
+            }
+        }
+
+        if (blank($this->customer_phone) || ! WhatsAppService::isConfigured($company)) {
+            return;
+        }
+
+        try {
+            WhatsAppService::sendInvoice($invoice->fresh(['client', 'company']), $this->customer_phone);
+        } catch (\Throwable $e) {
+            Log::warning('WhatsApp send failed: '.$e->getMessage());
+        }
     }
 
     private function detectDocType(string $doc): string

@@ -26,6 +26,22 @@
             @error('motivo') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
         </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="text-label-md text-on-surface-variant">WhatsApp (opcional)</label>
+                <input type="text" wire:model.blur="customer_phone" placeholder="Ej: 987654321"
+                       class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
+                <p class="text-xs text-outline mt-1">Se envía al aceptarse en SUNAT.</p>
+                @error('customer_phone') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="text-label-md text-on-surface-variant">Correo (opcional)</label>
+                <input type="email" wire:model.blur="customer_email" placeholder="cliente@correo.com"
+                       class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
+                @error('customer_email') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>

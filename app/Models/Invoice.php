@@ -25,6 +25,8 @@ class Invoice extends Model
         'sunat_document_type', 'related_invoice_id', 'sunat_operation_id',
         'sunat_environment', 'sunat_code', 'sunat_notes', 'sunat_ticket',
         'sunat_xml_name', 'sunat_sent_at',
+        'customer_phone', 'customer_email', 'whatsapp_status',
+        'whatsapp_sent_at', 'whatsapp_message_id', 'whatsapp_error',
     ];
 
     protected $casts = [
@@ -37,6 +39,7 @@ class Invoice extends Model
         'is_reservation' => 'boolean',
         'reserved_at' => 'datetime',
         'sunat_sent_at' => 'datetime',
+        'whatsapp_sent_at' => 'datetime',
     ];
 
     public function company()
@@ -122,6 +125,11 @@ class Invoice extends Model
     public function isReservation(): bool
     {
         return (bool) $this->is_reservation;
+    }
+
+    public function whatsappPhone(): ?string
+    {
+        return $this->customer_phone ?: $this->client?->phone;
     }
 
     public function canBeVoided(): bool

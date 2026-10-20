@@ -200,6 +200,16 @@
                                             </button>
                                         </form>
                                     @endif
+                                    @if($inv->isAccepted() && $inv->whatsappPhone())
+                                        <form action="{{ route('invoices.whatsapp', $inv) }}" method="post" class="inline-flex">
+                                            @csrf
+                                            <button type="submit"
+                                                    class="p-1.5 hover:bg-surface-container-highest rounded transition-colors {{ $inv->whatsapp_status === 'failed' ? 'text-error' : ($inv->whatsapp_status === 'sent' ? 'text-green-600' : 'text-on-surface-variant') }}"
+                                                    title="{{ $inv->whatsapp_status === 'failed' ? 'Reenviar por WhatsApp: '.$inv->whatsapp_error : ($inv->whatsapp_status === 'sent' ? 'Enviado por WhatsApp el '.$inv->whatsapp_sent_at?->format('d/m/Y H:i') : 'Enviar por WhatsApp') }}">
+                                                <span class="material-symbols-outlined text-[20px]">chat</span>
+                                            </button>
+                                        </form>
+                                    @endif
                                     @if($inv->isAccepted())
                                         <a href="{{ route('invoices.nota-credito', $inv) }}"
                                            class="p-1.5 hover:bg-surface-container-highest rounded text-on-surface-variant transition-colors"
