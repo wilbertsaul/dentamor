@@ -19,11 +19,21 @@ class WhatsAppServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_envia_la_plantilla_con_el_enlace_firmado_y_guarda_el_estado(): void
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'whatsapp.base_url' => 'http://waha.test:3000',
+            'whatsapp.api_key' => 'test-api-key',
+        ]);
+    }
+
+    public function test_envia_el_pdf_adjunto_con_caption_y_guarda_el_estado(): void
     {
         Storage::fake('local');
         Http::fake([
-            'graph.facebook.com/*' => Http::response(['messages' => [['id' => 'wamid.TEST']]], 200),
+            'waha.test:3000/api/sendFile' => Http::response(['id' => 'wamid.TEST', '_data' => ['id' => 'wamid.TEST']], 201),
         ]);
 
         $company = $this->company();
@@ -46,16 +56,17 @@ class WhatsAppServiceTest extends TestCase
 
         Http::assertSent(function (Request $request): bool {
             $data = $request->data();
-            $parameters = $data['template']['components'][0]['parameters'] ?? [];
 
-            return str_contains($request->url(), '/v21.0/1234567890/messages')
-                && $data['to'] === '51987654321'
-                && $data['template']['name'] === 'comprobante_emitido'
-                && $data['template']['language']['code'] === 'es'
-                && ($parameters[0]['text'] ?? null) === 'JUAN PEREZ'
-                && ($parameters[1]['text'] ?? null) === 'boleta B001-1'
-                && ($parameters[2]['text'] ?? null) === '100.00'
-                && str_contains((string) ($parameters[3]['text'] ?? ''), 'signature=');
+            return str_contains($request->url(), '/api/sendFile')
+                && $request->hasHeader('X-Api-Key', 'test-api-key')
+                && $data['session'] === 'default'
+                && $data['chatId'] === '51987654321@c.us'
+                && str_contains($data['caption'], 'JUAN PEREZ')
+                && str_contains($data['caption'], 'boleta B001-1')
+                && str_contains($data['caption'], '100.00')
+                && $data['file']['mimetype'] === 'application/pdf'
+                && $data['file']['filename'] === 'B001-1.pdf'
+                && base64_decode((string) $data['file']['data'], true) !== false;
         });
     }
 
@@ -87,11 +98,11 @@ class WhatsAppServiceTest extends TestCase
         Http::assertNothingSent();
     }
 
-    public function test_registra_el_error_cuando_meta_rechaza_el_mensaje(): void
+    public function test_registra_el_error_cuando_waha_rechaza_el_mensaje(): void
     {
         Storage::fake('local');
         Http::fake([
-            'graph.facebook.com/*' => Http::response(['error' => ['message' => 'Template not found']], 404),
+            'waha.test:3000/api/sendFile' => Http::response(['message' => 'session not connected'], 422),
         ]);
 
         $company = $this->company();
@@ -105,8 +116,45 @@ class WhatsAppServiceTest extends TestCase
         $invoice->refresh();
 
         $this->assertSame('failed', $invoice->whatsapp_status);
-        $this->assertStringContainsString('Template not found', (string) $invoice->whatsapp_error);
+        $this->assertStringContainsString('session not connected', (string) $invoice->whatsapp_error);
         $this->assertNull($invoice->whatsapp_sent_at);
+    }
+
+    public function test_envia_mensaje_de_prueba_por_texto(): void
+    {
+        Http::fake([
+            'waha.test:3000/api/sendText' => Http::response(['id' => 'wamid.TEST'], 201),
+        ]);
+
+        $company = $this->company();
+
+        $result = WhatsAppService::sendTest($company, '987654321');
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame('+51987654321', $result['phone']);
+
+        Http::assertSent(function (Request $request): bool {
+            $data = $request->data();
+
+            return str_contains($request->url(), '/api/sendText')
+                && $data['chatId'] === '51987654321@c.us'
+                && filled($data['text']);
+        });
+    }
+
+    public function test_consulta_el_estado_de_la_sesion(): void
+    {
+        Http::fake([
+            'waha.test:3000/api/sessions/default' => Http::response(['name' => 'default', 'status' => 'WORKING'], 200),
+        ]);
+
+        $company = $this->company();
+
+        $status = WhatsAppService::sessionStatus($company);
+
+        $this->assertTrue($status['ok']);
+        $this->assertSame('WORKING', $status['status']);
+        $this->assertSame('default', $status['name']);
     }
 
     public function test_el_enlace_publico_solo_funciona_con_firma_valida(): void
@@ -135,11 +183,7 @@ class WhatsAppServiceTest extends TestCase
             'sunat_username' => '72901015',
             'sunat_password' => 'clave',
             'whatsapp_enabled' => true,
-            'whatsapp_phone_number_id' => '1234567890',
-            'whatsapp_token' => 'EAAB-test-token',
-            'whatsapp_api_version' => 'v21.0',
-            'whatsapp_template_name' => 'comprobante_emitido',
-            'whatsapp_template_lang' => 'es',
+            'whatsapp_session' => 'default',
             ...$attributes,
         ]);
     }

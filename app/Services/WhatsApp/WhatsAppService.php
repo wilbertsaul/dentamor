@@ -7,7 +7,6 @@ use App\Models\Invoice;
 use App\Services\PdfService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
 
 class WhatsAppService
 {
@@ -17,7 +16,7 @@ class WhatsAppService
     }
 
     /**
-     * Envia el comprobante por WhatsApp usando la plantilla configurada.
+     * Envia el comprobante por WhatsApp con el PDF adjunto.
      *
      * @return array{ok: bool, skipped: bool, message: string, phone: ?string, status: ?int}
      */
@@ -52,35 +51,24 @@ class WhatsAppService
             }
         }
 
-        $link = URL::temporarySignedRoute(
-            'invoices.pdf.public',
-            now()->addDays((int) config('whatsapp.link_days', 30)),
-            ['invoice' => $invoice->id],
-        );
+        $absolutePath = Storage::disk('local')->path($pdfPath);
 
-        $client = MetaCloudClient::forCompany($company);
+        $client = WahaClient::forCompany($company);
 
         if ($client === null) {
-            return self::markFailed($invoice, 'Faltan credenciales de WhatsApp.');
+            return self::markFailed($invoice, 'Faltan credenciales de WhatsApp (WAHA_API_KEY / WHATSAPP_BASE_URL).');
         }
 
-        $response = $client->sendTemplate(
-            $apiPhone,
-            (string) $company->whatsapp_template_name,
-            $company->whatsappTemplateLang(),
-            [
-                $invoice->client?->name ?: 'cliente',
-                self::documentLabel($invoice),
-                number_format((float) $invoice->total, 2, '.', ''),
-                $link,
-            ],
-        );
+        $chatId = $apiPhone.'@c.us';
+
+        $response = $client->sendFile($chatId, $absolutePath, self::caption($invoice));
 
         if (! $response['ok']) {
-            return self::markFailed($invoice, (string) ($response['error'] ?: 'Error desconocido de Meta.'), $response['status']);
+            return self::markFailed($invoice, (string) ($response['error'] ?: 'Error desconocido de WAHA.'), $response['status']);
         }
 
-        $messageId = data_get($response['body'], 'messages.0.id');
+        $messageId = data_get($response['body'], 'id')
+            ?: data_get($response['body'], '_data.id');
 
         $invoice->forceFill([
             'whatsapp_status' => 'sent',
@@ -105,8 +93,8 @@ class WhatsAppService
      */
     public static function sendTest(Company $company, ?string $phone): array
     {
-        if (! filled($company->whatsapp_phone_number_id) || ! filled($company->whatsapp_token) || ! filled($company->whatsapp_template_name)) {
-            return self::result(false, true, 'Completa Phone Number ID, token y plantilla.');
+        if (! filled(config('whatsapp.base_url')) || ! filled(config('whatsapp.api_key'))) {
+            return self::result(false, true, 'Falta WHATSAPP_BASE_URL o WHATSAPP_API_KEY en la configuración del servidor.');
         }
 
         $apiPhone = PhoneNormalizer::toApiNumber($phone);
@@ -115,22 +103,15 @@ class WhatsAppService
             return self::result(false, true, 'Ingresa un teléfono válido.');
         }
 
-        $client = MetaCloudClient::forCompany($company);
+        $client = WahaClient::forCompany($company);
 
         if ($client === null) {
             return self::result(false, true, 'Faltan credenciales de WhatsApp.');
         }
 
-        $response = $client->sendTemplate(
-            $apiPhone,
-            (string) $company->whatsapp_template_name,
-            $company->whatsappTemplateLang(),
-            [
-                $company->commercial_name ?: $company->business_name ?: 'cliente',
-                'boleta de prueba',
-                '0.00',
-                url('/'),
-            ],
+        $response = $client->sendText(
+            $apiPhone.'@c.us',
+            'Mensaje de prueba de Dentamor. Si lo recibes, la conexión con WhatsApp funciona correctamente.',
         );
 
         return self::result(
@@ -142,6 +123,61 @@ class WhatsAppService
         );
     }
 
+    /**
+     * Estado de la sesión de WAHA desde la configuración.
+     *
+     * @return array{ok: bool, status: ?string, name: ?string, error: ?string}
+     */
+    public static function sessionStatus(Company $company): array
+    {
+        $client = WahaClient::forCompany($company);
+
+        if ($client === null) {
+            return ['ok' => false, 'status' => null, 'name' => null, 'error' => 'Faltan credenciales de WhatsApp.'];
+        }
+
+        $response = $client->sessionStatus();
+
+        if (! $response['ok']) {
+            return [
+                'ok' => false,
+                'status' => null,
+                'name' => null,
+                'error' => (string) ($response['error'] ?: 'No se pudo consultar la sesión.'),
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'status' => data_get($response['body'], 'status'),
+            'name' => data_get($response['body'], 'name'),
+            'error' => null,
+        ];
+    }
+
+    /**
+     * Fuerza la reconexión de la sesión de WAHA (por ejemplo, si el QR expiró).
+     *
+     * @return array{ok: bool, message: string}
+     */
+    public static function startSession(Company $company): array
+    {
+        $client = WahaClient::forCompany($company);
+
+        if ($client === null) {
+            return ['ok' => false, 'message' => 'Faltan credenciales de WhatsApp.'];
+        }
+
+        $response = $client->startSession();
+
+        return [
+            'ok' => $response['ok'],
+            'message' => $response['ok']
+                ? 'Solicitud de reconexión enviada. Escanea el QR con el teléfono.'
+                : (string) ($response['error'] ?: 'No se pudo iniciar la sesión.'),
+        ];
+    }
+
     public static function documentLabel(Invoice $invoice): string
     {
         if ($invoice->isCreditNote()) {
@@ -151,6 +187,20 @@ class WhatsAppService
         $type = $invoice->invoice_type === 'F' ? 'factura' : 'boleta';
 
         return $type.' '.$invoice->full_number;
+    }
+
+    private static function caption(Invoice $invoice): string
+    {
+        $clientName = $invoice->client?->name ?: 'cliente';
+        $label = self::documentLabel($invoice);
+        $total = number_format((float) $invoice->total, 2, '.', '');
+
+        return sprintf(
+            "Estimado %s,\nAdjunto el comprobante %s por S/. %s.\nGracias por su preferencia.",
+            $clientName,
+            $label,
+            $total,
+        );
     }
 
     /**

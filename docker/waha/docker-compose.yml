@@ -1,0 +1,23 @@
+services:
+  waha:
+    image: devlikeapro/waha:gows
+    container_name: dentamor_waha
+    restart: unless-stopped
+    environment:
+      # Obligatorio: protege la API. Debe coincidir con WHATSAPP_API_KEY del .env de Laravel.
+      - WAHA_API_KEY=${WAHA_API_KEY:?Genera una clave con: openssl rand -hex 32}
+      # No expone puertos fuera de 127.0.0.1 del host.
+      - WHATSAPP_RESTART_ALL_SESSIONS=true
+    volumes:
+      - ./sessions:/app/.sessions
+    # El puerto solo escucha en loopback del host (util para sacar el QR por SSH).
+    # Laravel (dentamor_app) llega por la red Docker como http://dentamor_waha:3000.
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - jemigra_net
+
+networks:
+  jemigra_net:
+    external: true
+    name: jemigra_jemigra_net

@@ -176,10 +176,10 @@
         <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-1">
                 <span class="material-symbols-outlined text-primary text-xl">chat</span>
-                <h3 class="text-body-lg font-semibold text-on-surface">WhatsApp (Meta Cloud API)</h3>
+                <h3 class="text-body-lg font-semibold text-on-surface">WhatsApp (WAHA)</h3>
             </div>
             <p class="text-body-sm text-on-surface-variant mb-5">
-                Envía el comprobante por WhatsApp cuando SUNAT lo acepta. Requiere una plantilla aprobada en Meta.
+                Envía el comprobante con el PDF adjunto cuando SUNAT lo acepta. Usa un número de WhatsApp personal vinculado a una sesión escaneada por QR.
             </p>
 
             <div class="border-b border-outline-variant pb-4 mb-4">
@@ -198,47 +198,48 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="text-label-md text-on-surface-variant">Phone Number ID</label>
-                    <input type="text" wire:model="whatsapp_phone_number_id"
+                    <label class="text-label-md text-on-surface-variant">Nombre de la sesión</label>
+                    <input type="text" wire:model="whatsapp_session" maxlength="50" placeholder="default"
                            class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
-                    @error('whatsapp_phone_number_id') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label class="text-label-md text-on-surface-variant">Business Account ID (opcional)</label>
-                    <input type="text" wire:model="whatsapp_business_account_id"
-                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
-                    @error('whatsapp_business_account_id') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
-                </div>
-                <div class="md:col-span-2">
-                    <label class="text-label-md text-on-surface-variant">Token de acceso permanente</label>
-                    <input type="password" wire:model="whatsapp_token" autocomplete="new-password"
-                           placeholder="{{ $company?->whatsapp_token ? '•••••••• (guardado)' : '' }}"
-                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
-                    <p class="mt-1 text-xs text-on-surface-variant">Se guarda cifrado. Déjalo vacío para conservar el actual.</p>
-                    @error('whatsapp_token') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label class="text-label-md text-on-surface-variant">Versión de la API</label>
-                    <input type="text" wire:model="whatsapp_api_version" maxlength="10"
-                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="v21.0">
-                    @error('whatsapp_api_version') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label class="text-label-md text-on-surface-variant">Idioma de la plantilla</label>
-                    <input type="text" wire:model="whatsapp_template_lang" maxlength="10"
-                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="es">
-                    @error('whatsapp_template_lang') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
-                </div>
-                <div class="md:col-span-2">
-                    <label class="text-label-md text-on-surface-variant">Nombre de la plantilla</label>
-                    <input type="text" wire:model="whatsapp_template_name" maxlength="100"
-                           class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="comprobante_emitido">
-                    <p class="mt-1 text-xs text-on-surface-variant">
-                        Variables en orden: 1) nombre del cliente, 2) tipo y número, 3) total, 4) enlace al PDF.
-                    </p>
-                    @error('whatsapp_template_name') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                    <p class="mt-1 text-xs text-on-surface-variant">Debe coincidir con la sesión configurada en el servidor WAHA.</p>
+                    @error('whatsapp_session') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                 </div>
             </div>
+
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+                <button type="button" wire:click="checkWhatsAppSession" wire:loading.attr="disabled"
+                        class="px-4 py-2.5 border border-primary text-primary-dark rounded-xl text-body-sm font-semibold flex items-center gap-2 hover:opacity-80 transition-opacity disabled:opacity-50">
+                    <span class="material-symbols-outlined text-base">wifi_tethering</span>
+                    Consultar sesión
+                </button>
+                <button type="button" wire:click="startWhatsAppSession" wire:loading.attr="disabled"
+                        class="px-4 py-2.5 border border-primary text-primary-dark rounded-xl text-body-sm font-semibold flex items-center gap-2 hover:opacity-80 transition-opacity disabled:opacity-50">
+                    <span class="material-symbols-outlined text-base">power_settings_new</span>
+                    Reconectar sesión
+                </button>
+                <span wire:loading wire:target="checkWhatsAppSession,startWhatsAppSession" class="text-body-sm text-on-surface-variant">Consultando a WAHA...</span>
+            </div>
+
+            @if($whatsappStatus)
+                <div class="mt-4 px-4 py-3 rounded-xl border flex items-start gap-2 {{ $whatsappStatus['ok'] ? 'bg-secondary-fixed/30 border-secondary/20 text-secondary' : 'bg-error-container/30 border-error/20 text-error' }}">
+                    <span class="material-symbols-outlined text-lg">{{ $whatsappStatus['ok'] ? 'verified' : 'error' }}</span>
+                    <div class="space-y-1">
+                        @if($whatsappStatus['ok'])
+                            <p class="text-body-sm font-semibold">
+                                Sesión: {{ $whatsappStatus['status'] ?? 'desconocido' }}{{ $whatsappStatus['name'] ? ' ('.$whatsappStatus['name'].')' : '' }}
+                            </p>
+                            @if($whatsappStatus['status'] === 'SCAN_QR')
+                                <p class="text-body-sm">Abre WhatsApp en el teléfono → Dispositivos vinculados → Vincular dispositivo y escanea el QR mostrado por WAHA.</p>
+                            @endif
+                            @if($whatsappStatus['message'] ?? null)
+                                <p class="text-body-sm opacity-90">{{ $whatsappStatus['message'] }}</p>
+                            @endif
+                        @else
+                            <p class="text-body-sm font-semibold">{{ $whatsappStatus['error'] ?? 'No se pudo consultar la sesión.' }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endif
 
             <div class="mt-4 flex flex-wrap items-end gap-3">
                 <div class="flex-1 min-w-[220px]">
@@ -266,6 +267,19 @@
                     </div>
                 </div>
             @endif
+
+            <div class="mt-4 px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant">
+                <p class="text-body-sm font-semibold text-on-surface">¿Cómo se configura WAHA?</p>
+                <ol class="mt-1 space-y-0.5 text-body-sm text-on-surface-variant list-decimal list-inside">
+                    <li>En el servidor Contabo, levanta WAHA: <code class="text-xs">docker compose -f docker/waha/docker-compose.yml up -d</code></li>
+                    <li>Consulta el estado de la sesión desde el botón de arriba.</li>
+                    <li>Si el estado es <strong>SCAN_QR</strong>, escanea el QR con el teléfono (WhatsApp → Dispositivos vinculados).</li>
+                    <li>Cuando el estado sea <strong>WORKING</strong>, activa el envío automático y guarda.</li>
+                </ol>
+                <p class="mt-2 text-xs text-on-surface-variant">
+                    Usa un número exclusivo para el sistema. El envío no usa la API oficial de Meta: una cuenta no oficial puede ser baneada si se spampea.
+                </p>
+            </div>
         </div>
 
         <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">

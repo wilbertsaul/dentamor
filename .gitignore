@@ -25,3 +25,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/docker/waha/.env
+/docker/waha/sessions/

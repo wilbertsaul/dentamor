@@ -4,24 +4,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | WhatsApp Cloud API (Meta)
+    | WhatsApp (WAHA - devlike.pro)
     |--------------------------------------------------------------------------
     |
-    | Las credenciales reales se guardan por empresa en la tabla companies.
-    | Este archivo define valores por defecto y el endpoint de la Graph API.
+    | El servidor WAHA corre en el mismo host que Laravel (Docker) y solo
+    | escucha en 127.0.0.1:3000. La API key se genera en el compose.
+    | El número de WhatsApp se escanea una sola vez por QR desde la sesión.
     |
     */
 
-    'graph_url' => env('WHATSAPP_GRAPH_URL', 'https://graph.facebook.com'),
+    'base_url' => env('WHATSAPP_BASE_URL', 'http://127.0.0.1:3000'),
 
-    'api_version' => env('WHATSAPP_API_VERSION', 'v21.0'),
+    'api_key' => env('WHATSAPP_API_KEY'),
 
     'timeout' => (int) env('WHATSAPP_TIMEOUT', 20),
 
     'default_country_code' => env('WHATSAPP_DEFAULT_COUNTRY_CODE', '51'),
-
-    'template_lang' => env('WHATSAPP_TEMPLATE_LANG', 'es'),
-
-    'link_days' => (int) env('WHATSAPP_LINK_DAYS', 30),
 
 ];

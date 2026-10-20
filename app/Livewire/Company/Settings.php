@@ -73,21 +73,13 @@ class Settings extends Component
 
     public $whatsapp_enabled = false;
 
-    public $whatsapp_phone_number_id;
-
-    public $whatsapp_business_account_id;
-
-    public $whatsapp_token;
-
-    public $whatsapp_api_version = 'v21.0';
-
-    public $whatsapp_template_name;
-
-    public $whatsapp_template_lang = 'es';
+    public $whatsapp_session = 'default';
 
     public $whatsapp_test_phone = '';
 
     public $whatsappTest = null;
+
+    public $whatsappStatus = null;
 
     public function mount()
     {
@@ -116,11 +108,7 @@ class Settings extends Component
             $this->factura_numero = SeriesService::peek($this->company, $this->factura_serie);
             $this->production = $this->company->production ?? false;
             $this->whatsapp_enabled = $this->company->whatsapp_enabled ?? false;
-            $this->whatsapp_phone_number_id = $this->company->whatsapp_phone_number_id;
-            $this->whatsapp_business_account_id = $this->company->whatsapp_business_account_id;
-            $this->whatsapp_api_version = $this->company->whatsapp_api_version ?: 'v21.0';
-            $this->whatsapp_template_name = $this->company->whatsapp_template_name;
-            $this->whatsapp_template_lang = $this->company->whatsapp_template_lang ?: 'es';
+            $this->whatsapp_session = $this->company->whatsappSession();
         }
     }
 
@@ -149,11 +137,7 @@ class Settings extends Component
             'certificate_password' => 'nullable',
             'production' => 'boolean',
             'whatsapp_enabled' => 'boolean',
-            'whatsapp_phone_number_id' => 'nullable|max:50',
-            'whatsapp_business_account_id' => 'nullable|max:50',
-            'whatsapp_api_version' => 'nullable|max:10',
-            'whatsapp_template_name' => 'nullable|max:100',
-            'whatsapp_template_lang' => 'nullable|max:10',
+            'whatsapp_session' => 'nullable|max:50',
         ]);
 
         $data = [
@@ -177,15 +161,11 @@ class Settings extends Component
             'nc_factura_serie' => strtoupper(trim($this->nc_factura_serie)),
             'production' => $this->production,
             'whatsapp_enabled' => $this->whatsapp_enabled,
-            'whatsapp_phone_number_id' => $this->whatsapp_phone_number_id,
-            'whatsapp_business_account_id' => $this->whatsapp_business_account_id,
-            'whatsapp_api_version' => $this->whatsapp_api_version ?: 'v21.0',
-            'whatsapp_template_name' => $this->whatsapp_template_name,
-            'whatsapp_template_lang' => $this->whatsapp_template_lang ?: 'es',
+            'whatsapp_session' => $this->whatsapp_session ?: 'default',
         ];
 
         // Las claves SOL nunca se devuelven al navegador: solo se reemplazan si se escriben.
-        foreach (['sunat_password', 'sunat_password_secondary', 'whatsapp_token'] as $secret) {
+        foreach (['sunat_password', 'sunat_password_secondary'] as $secret) {
             if (filled($this->{$secret})) {
                 $data[$secret] = $this->{$secret};
             }
@@ -214,11 +194,11 @@ class Settings extends Component
         $this->sunat_password = null;
         $this->sunat_password_secondary = null;
         $this->certificate_password = null;
-        $this->whatsapp_token = null;
 
         session()->flash('message', 'Configuración guardada correctamente.');
         $this->sunatTest = null;
         $this->whatsappTest = null;
+        $this->whatsappStatus = null;
     }
 
     public function updated($propertyName)
@@ -227,11 +207,11 @@ class Settings extends Component
             'ruc', 'sunat_username', 'sunat_password', 'sunat_username_secondary',
             'sunat_password_secondary', 'production', 'certificate', 'sunat_ubigeo',
             'boleta_serie', 'factura_serie', 'nc_boleta_serie', 'nc_factura_serie',
-            'whatsapp_enabled', 'whatsapp_phone_number_id', 'whatsapp_business_account_id',
-            'whatsapp_token', 'whatsapp_api_version', 'whatsapp_template_name', 'whatsapp_template_lang',
+            'whatsapp_enabled', 'whatsapp_session',
         ], true)) {
             $this->sunatTest = null;
             $this->whatsappTest = null;
+            $this->whatsappStatus = null;
         }
     }
 
@@ -295,32 +275,49 @@ class Settings extends Component
         $this->whatsappTest = null;
 
         $this->validate([
-            'whatsapp_phone_number_id' => 'required|max:50',
-            'whatsapp_template_name' => 'required|max:100',
             'whatsapp_test_phone' => 'required|max:20',
         ]);
-
-        if (blank($this->whatsapp_token) && ! filled($this->company?->whatsapp_token)) {
-            $this->addError('whatsapp_token', 'Ingresa el token de acceso.');
-
-            return;
-        }
 
         $company = $this->company ? clone $this->company : new Company;
         $company->forceFill([
             'whatsapp_enabled' => true,
-            'whatsapp_phone_number_id' => $this->whatsapp_phone_number_id,
-            'whatsapp_business_account_id' => $this->whatsapp_business_account_id,
-            'whatsapp_api_version' => $this->whatsapp_api_version ?: 'v21.0',
-            'whatsapp_template_name' => $this->whatsapp_template_name,
-            'whatsapp_template_lang' => $this->whatsapp_template_lang ?: 'es',
+            'whatsapp_session' => $this->whatsapp_session ?: 'default',
         ]);
 
-        if (filled($this->whatsapp_token)) {
-            $company->forceFill(['whatsapp_token' => $this->whatsapp_token]);
-        }
-
         $this->whatsappTest = WhatsAppService::sendTest($company, $this->whatsapp_test_phone);
+    }
+
+    public function checkWhatsAppSession()
+    {
+        $this->whatsappStatus = null;
+
+        $company = $this->company ? clone $this->company : new Company;
+        $company->forceFill([
+            'whatsapp_session' => $this->whatsapp_session ?: 'default',
+        ]);
+
+        $this->whatsappStatus = WhatsAppService::sessionStatus($company);
+    }
+
+    public function startWhatsAppSession()
+    {
+        $this->whatsappStatus = null;
+
+        $company = $this->company ? clone $this->company : new Company;
+        $company->forceFill([
+            'whatsapp_session' => $this->whatsapp_session ?: 'default',
+        ]);
+
+        $result = WhatsAppService::startSession($company);
+
+        $this->whatsappStatus = [
+            'ok' => $result['ok'],
+            'status' => null,
+            'name' => null,
+            'error' => $result['ok'] ? null : $result['message'],
+            'started' => $result['ok'],
+            'message' => $result['message'],
+        ];
     }
 
     public function render()
