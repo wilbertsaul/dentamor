@@ -60,6 +60,24 @@ class Create extends Component
         $this->issue_date = now()->format('Y-m-d');
     }
 
+    /**
+     * Serie que se usará al emitir (beta o producción según Modo Producción).
+     */
+    public function serieActiva(string $type): string
+    {
+        if ($type === 'R') {
+            return 'RVA';
+        }
+
+        $company = Company::first();
+
+        if (! $company) {
+            return $type === 'F' ? 'F002' : 'B002';
+        }
+
+        return SeriesService::forInvoiceType($company, $type);
+    }
+
     public function searchClient()
     {
         $doc = trim($this->searchDoc);

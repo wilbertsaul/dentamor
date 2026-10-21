@@ -577,7 +577,7 @@ class BulkInvoice extends Component
                     ]);
                 }
 
-                $serie = SeriesService::forInvoiceType($payment->invoice_type === 'F' ? 'F' : 'B');
+                $serie = SeriesService::forInvoiceType($company, $payment->invoice_type === 'F' ? 'F' : 'B');
                 $number = SeriesService::next($company, $serie);
 
                 $subtotal = round($payment->amount / 1.18, 2);

@@ -9,6 +9,7 @@ use App\Services\Sunat\CertificateService;
 use App\Services\Sunat\ConnectionTest;
 use App\Services\Sunat\SeriesService;
 use App\Services\WhatsApp\WhatsAppService;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -59,13 +60,29 @@ class Settings extends Component
 
     public $nc_factura_serie = 'FC02';
 
+    public $boleta_serie_beta = 'PR01';
+
+    public $factura_serie_beta = 'PR02';
+
+    public $nc_boleta_serie_beta = 'PR03';
+
+    public $nc_factura_serie_beta = 'PR04';
+
     public $boleta_numero = 1;
 
     public $factura_numero = 1;
 
+    public $boleta_numero_beta = 1;
+
+    public $factura_numero_beta = 1;
+
     public $certificate_password;
 
     public $certificate;
+
+    public $logo;
+
+    public $logo_preview = null;
 
     public $production = false;
 
@@ -104,11 +121,18 @@ class Settings extends Component
             $this->factura_serie = $this->company->facturaSerie();
             $this->nc_boleta_serie = $this->company->ncBoletaSerie();
             $this->nc_factura_serie = $this->company->ncFacturaSerie();
+            $this->boleta_serie_beta = $this->company->boletaSerieBeta();
+            $this->factura_serie_beta = $this->company->facturaSerieBeta();
+            $this->nc_boleta_serie_beta = $this->company->ncBoletaSerieBeta();
+            $this->nc_factura_serie_beta = $this->company->ncFacturaSerieBeta();
             $this->boleta_numero = SeriesService::peek($this->company, $this->boleta_serie);
             $this->factura_numero = SeriesService::peek($this->company, $this->factura_serie);
+            $this->boleta_numero_beta = SeriesService::peek($this->company, $this->boleta_serie_beta);
+            $this->factura_numero_beta = SeriesService::peek($this->company, $this->factura_serie_beta);
             $this->production = $this->company->production ?? false;
             $this->whatsapp_enabled = $this->company->whatsapp_enabled ?? false;
             $this->whatsapp_session = $this->company->whatsappSession();
+            $this->logo_preview = $this->logoDataUri($this->company->logo_path);
         }
     }
 
@@ -133,8 +157,13 @@ class Settings extends Component
             'factura_serie' => 'required|string|max:10|regex:/^F\d{3}$/',
             'nc_boleta_serie' => 'required|string|max:10|regex:/^BC\d{2}$/',
             'nc_factura_serie' => 'required|string|max:10|regex:/^FC\d{2}$/',
+            'boleta_serie_beta' => 'required|string|max:4|regex:/^[A-Z0-9]{4}$/',
+            'factura_serie_beta' => 'required|string|max:4|regex:/^[A-Z0-9]{4}$/',
+            'nc_boleta_serie_beta' => 'required|string|max:4|regex:/^[A-Z0-9]{4}$/',
+            'nc_factura_serie_beta' => 'required|string|max:4|regex:/^[A-Z0-9]{4}$/',
             'certificate' => ['nullable', 'file', 'extensions:'.implode(',', CertificateService::EXTENSIONS), 'max:2048'],
             'certificate_password' => 'nullable',
+            'logo' => 'nullable|file|mimes:png,jpg,jpeg,gif|max:2048',
             'production' => 'boolean',
             'whatsapp_enabled' => 'boolean',
             'whatsapp_session' => 'nullable|max:50',
@@ -159,6 +188,10 @@ class Settings extends Component
             'factura_serie' => strtoupper(trim($this->factura_serie)),
             'nc_boleta_serie' => strtoupper(trim($this->nc_boleta_serie)),
             'nc_factura_serie' => strtoupper(trim($this->nc_factura_serie)),
+            'boleta_serie_beta' => strtoupper(trim($this->boleta_serie_beta)),
+            'factura_serie_beta' => strtoupper(trim($this->factura_serie_beta)),
+            'nc_boleta_serie_beta' => strtoupper(trim($this->nc_boleta_serie_beta)),
+            'nc_factura_serie_beta' => strtoupper(trim($this->nc_factura_serie_beta)),
             'production' => $this->production,
             'whatsapp_enabled' => $this->whatsapp_enabled,
             'whatsapp_session' => $this->whatsapp_session ?: 'default',
@@ -184,6 +217,18 @@ class Settings extends Component
             }
         }
 
+        if ($this->logo) {
+            $path = 'logos/logo.'.strtolower($this->logo->extension());
+
+            Storage::disk('local')->put($path, file_get_contents($this->logo->getRealPath()));
+
+            if ($this->company && $this->company->logo_path && $this->company->logo_path !== $path) {
+                Storage::disk('local')->delete($this->company->logo_path);
+            }
+
+            $data['logo_path'] = $path;
+        }
+
         if ($this->company) {
             $this->company->update($data);
             $this->company = $this->company->fresh();
@@ -194,6 +239,8 @@ class Settings extends Component
         $this->sunat_password = null;
         $this->sunat_password_secondary = null;
         $this->certificate_password = null;
+        $this->logo = null;
+        $this->logo_preview = $this->company ? $this->logoDataUri($this->company->logo_path) : null;
 
         session()->flash('message', 'Configuración guardada correctamente.');
         $this->sunatTest = null;
@@ -207,12 +254,48 @@ class Settings extends Component
             'ruc', 'sunat_username', 'sunat_password', 'sunat_username_secondary',
             'sunat_password_secondary', 'production', 'certificate', 'sunat_ubigeo',
             'boleta_serie', 'factura_serie', 'nc_boleta_serie', 'nc_factura_serie',
+            'boleta_serie_beta', 'factura_serie_beta', 'nc_boleta_serie_beta', 'nc_factura_serie_beta',
             'whatsapp_enabled', 'whatsapp_session',
         ], true)) {
             $this->sunatTest = null;
             $this->whatsappTest = null;
             $this->whatsappStatus = null;
         }
+    }
+
+    public function updatedLogo()
+    {
+        if (! $this->logo) {
+            $this->logo_preview = $this->company ? $this->logoDataUri($this->company->logo_path) : null;
+
+            return;
+        }
+
+        $this->validate(['logo' => 'nullable|file|mimes:png,jpg,jpeg,gif|max:2048']);
+        $this->logo_preview = $this->logo->temporaryUrl();
+    }
+
+    public function removeLogo()
+    {
+        if ($this->company && $this->company->logo_path) {
+            Storage::disk('local')->delete($this->company->logo_path);
+            $this->company->update(['logo_path' => null]);
+            $this->company = $this->company->fresh();
+        }
+
+        $this->logo = null;
+        $this->logo_preview = null;
+    }
+
+    private function logoDataUri(?string $path): ?string
+    {
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            return null;
+        }
+
+        $mime = mime_content_type(Storage::disk('local')->path($path)) ?: 'image/png';
+
+        return 'data:'.$mime.';base64,'.base64_encode(Storage::disk('local')->get($path));
     }
 
     public function testSunat()

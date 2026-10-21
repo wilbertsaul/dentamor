@@ -14,6 +14,7 @@ class Company extends Model
         'sunat_urbanization', 'sunat_establishment_code', 'sunat_email', 'sunat_phone',
         'sunat_username_secondary', 'sunat_password_secondary',
         'boleta_serie', 'factura_serie', 'nc_boleta_serie', 'nc_factura_serie',
+        'boleta_serie_beta', 'factura_serie_beta', 'nc_boleta_serie_beta', 'nc_factura_serie_beta',
         'whatsapp_enabled', 'whatsapp_session',
     ];
 
@@ -114,6 +115,30 @@ class Company extends Model
     public function ncFacturaSerie(): string
     {
         return $this->nc_factura_serie ?: 'FC02';
+    }
+
+    /**
+     * Series de prueba: se usan mientras Modo Producción está apagado (beta),
+     * para no consumir numeración real.
+     */
+    public function boletaSerieBeta(): string
+    {
+        return $this->boleta_serie_beta ?: 'PR01';
+    }
+
+    public function facturaSerieBeta(): string
+    {
+        return $this->factura_serie_beta ?: 'PR02';
+    }
+
+    public function ncBoletaSerieBeta(): string
+    {
+        return $this->nc_boleta_serie_beta ?: 'PR03';
+    }
+
+    public function ncFacturaSerieBeta(): string
+    {
+        return $this->nc_factura_serie_beta ?: 'PR04';
     }
 
     public function whatsappConfigured(): bool

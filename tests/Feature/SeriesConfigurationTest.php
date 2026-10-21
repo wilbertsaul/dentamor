@@ -83,6 +83,61 @@ class SeriesConfigurationTest extends TestCase
         $this->assertSame(2, SeriesService::peek($company, 'B002'));
     }
 
+    public function test_en_beta_se_usan_las_series_de_prueba_por_defecto(): void
+    {
+        $company = $this->company(['production' => false]);
+
+        $this->assertSame('PR01', SeriesService::forInvoiceType($company, 'B'));
+        $this->assertSame('PR02', SeriesService::forInvoiceType($company, 'F'));
+        $this->assertSame('PR03', SeriesService::creditNoteSeries($company, 'B'));
+        $this->assertSame('PR04', SeriesService::creditNoteSeries($company, 'F'));
+    }
+
+    public function test_las_series_de_prueba_se_pueden_personalizar(): void
+    {
+        $company = $this->company([
+            'production' => false,
+            'boleta_serie_beta' => 'T001',
+            'factura_serie_beta' => 'T002',
+        ]);
+
+        $this->assertSame('T001', SeriesService::forInvoiceType($company, 'B'));
+        $this->assertSame('T002', SeriesService::forInvoiceType($company, 'F'));
+        $this->assertSame('T001', $company->boletaSerieBeta());
+    }
+
+    public function test_los_accesores_beta_aplican_el_default_cuando_estan_vacios(): void
+    {
+        $company = $this->company([
+            'production' => false,
+            'boleta_serie_beta' => '',
+            'factura_serie_beta' => '',
+            'nc_boleta_serie_beta' => '',
+            'nc_factura_serie_beta' => '',
+        ]);
+
+        $this->assertSame('PR01', $company->boletaSerieBeta());
+        $this->assertSame('PR02', $company->facturaSerieBeta());
+        $this->assertSame('PR03', $company->ncBoletaSerieBeta());
+        $this->assertSame('PR04', $company->ncFacturaSerieBeta());
+    }
+
+    public function test_al_activar_producción_se_vuelven_a_usar_las_series_reales(): void
+    {
+        $company = $this->company([
+            'production' => false,
+            'boleta_serie' => 'B002',
+            'factura_serie' => 'F002',
+        ]);
+
+        $this->assertSame('PR01', SeriesService::forInvoiceType($company, 'B'));
+
+        $company->update(['production' => true]);
+
+        $this->assertSame('B002', SeriesService::forInvoiceType($company, 'B'));
+        $this->assertSame('F002', SeriesService::forInvoiceType($company, 'F'));
+    }
+
     private function company(array $attributes): Company
     {
         $this->rucSuffix++;

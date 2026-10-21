@@ -14,17 +14,30 @@ class SeriesService
 
     public const BOLETA_SERIE = 'B002';
 
+    /**
+     * En producción se usan las series reales; en beta (Modo Producción apagado)
+     * se usan las series de prueba para no consumir numeración real.
+     */
     public static function forInvoiceType(Company $company, string $invoiceType): string
     {
-        return $invoiceType === 'F' ? $company->facturaSerie() : $company->boletaSerie();
+        if ($company->production) {
+            return $invoiceType === 'F' ? $company->facturaSerie() : $company->boletaSerie();
+        }
+
+        return $invoiceType === 'F' ? $company->facturaSerieBeta() : $company->boletaSerieBeta();
     }
 
     /**
-     * Las notas de crédito usan series propias (FC02/BC02) ligadas al tipo 07.
+     * Las notas de crédito usan series propias (FC02/BC02 en producción,
+     * PR03/PR04 en beta) ligadas al tipo 07.
      */
     public static function creditNoteSeries(Company $company, string $invoiceType): string
     {
-        return $invoiceType === 'F' ? $company->ncFacturaSerie() : $company->ncBoletaSerie();
+        if ($company->production) {
+            return $invoiceType === 'F' ? $company->ncFacturaSerie() : $company->ncBoletaSerie();
+        }
+
+        return $invoiceType === 'F' ? $company->ncFacturaSerieBeta() : $company->ncBoletaSerieBeta();
     }
 
     public static function documentTypeFor(string $serie): ?string

@@ -45,9 +45,38 @@ class SunatSeriesTest extends TestCase
         $this->assertSame('B002', SeriesService::forInvoiceType($company, 'B'));
     }
 
+    public function test_en_beta_se_usan_las_series_de_prueba(): void
+    {
+        $company = new Company([
+            'production' => false,
+            'boleta_serie' => 'B002',
+            'factura_serie' => 'F002',
+            'nc_boleta_serie' => 'BC02',
+            'nc_factura_serie' => 'FC02',
+        ]);
+
+        $this->assertSame('PR01', SeriesService::forInvoiceType($company, 'B'));
+        $this->assertSame('PR02', SeriesService::forInvoiceType($company, 'F'));
+        $this->assertSame('PR03', SeriesService::creditNoteSeries($company, 'B'));
+        $this->assertSame('PR04', SeriesService::creditNoteSeries($company, 'F'));
+    }
+
+    public function test_las_series_de_prueba_se_pueden_personalizar(): void
+    {
+        $company = new Company([
+            'production' => false,
+            'boleta_serie_beta' => 'T001',
+            'factura_serie_beta' => 'T002',
+        ]);
+
+        $this->assertSame('T001', SeriesService::forInvoiceType($company, 'B'));
+        $this->assertSame('T002', SeriesService::forInvoiceType($company, 'F'));
+    }
+
     private function company(): Company
     {
         return new Company([
+            'production' => true,
             'boleta_serie' => 'B002',
             'factura_serie' => 'F002',
             'nc_boleta_serie' => 'BC02',

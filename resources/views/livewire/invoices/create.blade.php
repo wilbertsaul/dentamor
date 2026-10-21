@@ -27,14 +27,14 @@
                                            {{ $invoice_type === 'B'
                                               ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
                                               : 'bg-transparent text-on-surface-variant border-outline-variant hover:bg-surface-container-low' }}">
-                                Boleta (B001)
+                                Boleta ({{ $this->serieActiva('B') }})
                             </button>
                             <button type="button" wire:click="$set('invoice_type', 'F')"
                                     class="flex-1 py-3 text-label-md rounded-xl border-2 transition-all
                                            {{ $invoice_type === 'F'
                                               ? 'bg-primary text-on-primary border-primary shadow-sm'
                                               : 'bg-transparent text-on-surface-variant border-outline-variant hover:bg-surface-container-low' }}">
-                                Factura (F001)
+                                Factura ({{ $this->serieActiva('F') }})
                             </button>
                             <button type="button" wire:click="$set('invoice_type', 'R')"
                                     class="flex-1 py-3 text-label-md rounded-xl border-2 transition-all
@@ -264,7 +264,7 @@
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-surface-container-low rounded-xl p-2">
                             <span class="text-label-sm text-outline font-bold uppercase block mb-1">Serie</span>
-                            <span class="text-body-md font-semibold text-on-surface">{{ $invoice_type === 'F' ? 'F001' : ($invoice_type === 'R' ? 'RVA' : 'B001') }}</span>
+                            <span class="text-body-md font-semibold text-on-surface">{{ $this->serieActiva($invoice_type) }}</span>
                         </div>
                         <div class="bg-surface-container-low rounded-xl p-2">
                             <span class="text-label-sm text-outline font-bold uppercase block mb-1">Fecha</span>
