@@ -6,10 +6,17 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Courier New', monospace; font-size: 10px; color: #000; padding: 20px; }
-        .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .header h1 { font-size: 16px; font-weight: bold; }
-        .header .type { font-size: 18px; font-weight: bold; border: 2px solid #000; display: inline-block; padding: 3px 15px; margin-top: 5px; }
+        .header { margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .header table { width: 100%; border-collapse: collapse; }
+        .header td { vertical-align: middle; }
+        .header .brand { width: 40%; text-align: center; }
+        .header .brand img { height: 72px; }
+        .header .company { width: 28%; text-align: center; }
+        .header .company h1 { font-size: 14px; font-weight: bold; }
         .header .ruc { font-size: 11px; margin-top: 3px; }
+        .header .doc { width: 32%; text-align: center; }
+        .header .type { font-size: 12px; font-weight: bold; border: 2px solid #000; display: inline-block; padding: 3px 8px; }
+        .header .docnum { font-size: 13px; font-weight: bold; margin-top: 5px; }
         .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .info-box { width: 48%; }
         .info-box h3 { font-size: 10px; font-weight: bold; border-bottom: 1px solid #000; margin-bottom: 3px; }
@@ -31,15 +38,21 @@
 </head>
 <body>
     <div class="header">
-        @if($logoBase64)
-            <div style="margin-bottom:8px;"><img src="{{ $logoBase64 }}" alt="Logo" style="height:60px;"></div>
-        @else
-            <div style="margin-bottom:8px;"><img src="{{ public_path('images/logo-dentamor.png') }}" alt="Dentamor" style="height:60px;"></div>
-        @endif
-        <h1>{{ $invoice->company->business_name }}</h1>
-        <p class="ruc">RUC: {{ $invoice->company->ruc }}</p>
-        <div class="type">{{ $invoice->invoice_type === 'F' ? 'FACTURA ELECTRÓNICA' : 'BOLETA ELECTRÓNICA' }}</div>
-        <p style="font-size:14px;font-weight:bold;margin-top:3px;">{{ $invoice->serie }}-{{ str_pad($invoice->number, 8, '0', STR_PAD_LEFT) }}</p>
+        <table>
+            <tr>
+                <td class="brand">
+                    <img src="{{ public_path('images/logo-comprobante.jpeg') }}" alt="Logo">
+                </td>
+                <td class="company">
+                    <h1>{{ $invoice->company->business_name }}</h1>
+                    <p class="ruc">RUC: {{ $invoice->company->ruc }}</p>
+                </td>
+                <td class="doc">
+                    <div class="type">{{ $invoice->invoice_type === 'F' ? 'FACTURA ELECTRÓNICA' : 'BOLETA ELECTRÓNICA' }}</div>
+                    <p class="docnum">{{ $invoice->serie }}-{{ str_pad($invoice->number, 8, '0', STR_PAD_LEFT) }}</p>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="info-row">
