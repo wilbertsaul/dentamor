@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Company;
+use App\Models\Invoice;
 use App\Services\Sunat\SeriesService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -87,10 +88,37 @@ class SeriesConfigurationTest extends TestCase
     {
         $company = $this->company(['production' => false]);
 
-        $this->assertSame('PR01', SeriesService::forInvoiceType($company, 'B'));
-        $this->assertSame('PR02', SeriesService::forInvoiceType($company, 'F'));
-        $this->assertSame('PR03', SeriesService::creditNoteSeries($company, 'B'));
-        $this->assertSame('PR04', SeriesService::creditNoteSeries($company, 'F'));
+        $this->assertSame('BP01', SeriesService::forInvoiceType($company, 'B'));
+        $this->assertSame('FP01', SeriesService::forInvoiceType($company, 'F'));
+        $this->assertSame('BC01', SeriesService::creditNoteSeries($company, 'B'));
+        $this->assertSame('FC01', SeriesService::creditNoteSeries($company, 'F'));
+    }
+
+    public function test_las_series_beta_son_validas_para_sunat(): void
+    {
+        $company = $this->company(['production' => false]);
+
+        $invoice = new Invoice([
+            'serie' => SeriesService::forInvoiceType($company, 'B'),
+            'invoice_type' => 'B',
+        ]);
+        $factura = new Invoice([
+            'serie' => SeriesService::forInvoiceType($company, 'F'),
+            'invoice_type' => 'F',
+        ]);
+        $ncBoleta = new Invoice([
+            'serie' => SeriesService::creditNoteSeries($company, 'B'),
+            'invoice_type' => 'B',
+        ]);
+        $ncFactura = new Invoice([
+            'serie' => SeriesService::creditNoteSeries($company, 'F'),
+            'invoice_type' => 'F',
+        ]);
+
+        $this->assertTrue($invoice->isElectronicSerie(), 'Boleta beta debe iniciar con F o B');
+        $this->assertTrue($factura->isElectronicSerie(), 'Factura beta debe iniciar con F o B');
+        $this->assertTrue($ncBoleta->isElectronicSerie(), 'NC boleta beta debe iniciar con F o B');
+        $this->assertTrue($ncFactura->isElectronicSerie(), 'NC factura beta debe iniciar con F o B');
     }
 
     public function test_las_series_de_prueba_se_pueden_personalizar(): void
@@ -116,10 +144,10 @@ class SeriesConfigurationTest extends TestCase
             'nc_factura_serie_beta' => '',
         ]);
 
-        $this->assertSame('PR01', $company->boletaSerieBeta());
-        $this->assertSame('PR02', $company->facturaSerieBeta());
-        $this->assertSame('PR03', $company->ncBoletaSerieBeta());
-        $this->assertSame('PR04', $company->ncFacturaSerieBeta());
+        $this->assertSame('BP01', $company->boletaSerieBeta());
+        $this->assertSame('FP01', $company->facturaSerieBeta());
+        $this->assertSame('BC01', $company->ncBoletaSerieBeta());
+        $this->assertSame('FC01', $company->ncFacturaSerieBeta());
     }
 
     public function test_al_activar_producción_se_vuelven_a_usar_las_series_reales(): void
@@ -130,7 +158,7 @@ class SeriesConfigurationTest extends TestCase
             'factura_serie' => 'F002',
         ]);
 
-        $this->assertSame('PR01', SeriesService::forInvoiceType($company, 'B'));
+        $this->assertSame('BP01', SeriesService::forInvoiceType($company, 'B'));
 
         $company->update(['production' => true]);
 

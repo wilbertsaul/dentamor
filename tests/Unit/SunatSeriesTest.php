@@ -55,10 +55,10 @@ class SunatSeriesTest extends TestCase
             'nc_factura_serie' => 'FC02',
         ]);
 
-        $this->assertSame('PR01', SeriesService::forInvoiceType($company, 'B'));
-        $this->assertSame('PR02', SeriesService::forInvoiceType($company, 'F'));
-        $this->assertSame('PR03', SeriesService::creditNoteSeries($company, 'B'));
-        $this->assertSame('PR04', SeriesService::creditNoteSeries($company, 'F'));
+        $this->assertSame('BP01', SeriesService::forInvoiceType($company, 'B'));
+        $this->assertSame('FP01', SeriesService::forInvoiceType($company, 'F'));
+        $this->assertSame('BC01', SeriesService::creditNoteSeries($company, 'B'));
+        $this->assertSame('FC01', SeriesService::creditNoteSeries($company, 'F'));
     }
 
     public function test_las_series_de_prueba_se_pueden_personalizar(): void

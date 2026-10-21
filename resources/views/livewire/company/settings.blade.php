@@ -1,11 +1,17 @@
-<div class="space-y-6 max-w-3xl">
+<div class="space-y-6 max-w-3xl w-full min-w-0">
     <form wire:submit="save">
-        <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
+        @if (session('message'))
+            <div class="mb-6 px-4 py-3 rounded-xl flex items-center gap-2 border border-primary/20" style="background-color: #E6FAF7; color: #00796B;">
+                <span class="material-symbols-outlined text-lg">check_circle</span>
+                {{ session('message') }}
+            </div>
+        @endif
+        <div class="bg-white rounded-2xl border border-outline-variant p-4 sm:p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-5">
                 <span class="material-symbols-outlined text-primary text-xl">business</span>
                 <h3 class="text-body-lg font-semibold text-on-surface">Datos de la Empresa</h3>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 [&>*]:min-w-0">
                 <div>
                     <label class="text-label-md text-on-surface-variant">RUC</label>
                     <input type="text" wire:model="ruc" maxlength="11" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
@@ -75,7 +81,7 @@
                     <input type="file" wire:model="logo" accept="image/png,image/jpeg,image/gif"
                            class="block w-full max-w-xs text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-fixed file:text-primary hover:file:bg-primary-container file:cursor-pointer">
                     @if($logo_preview)
-                        <div class="flex items-center gap-3">
+                        <div class="flex flex-wrap items-center gap-3">
                             <img src="{{ $logo_preview }}" alt="Logo actual"
                                  class="h-14 w-auto max-w-[160px] object-contain bg-surface-container-low rounded-lg border border-outline-variant p-1">
                             <button type="button" wire:click="removeLogo"
@@ -92,12 +98,12 @@
             </p>
         </div>
 
-        <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
+        <div class="bg-white rounded-2xl border border-outline-variant p-4 sm:p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-5">
                 <span class="material-symbols-outlined text-primary text-xl">cloud</span>
                 <h3 class="text-body-lg font-semibold text-on-surface">Credenciales SUNAT</h3>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 [&>*]:min-w-0">
                 <div>
                     <label class="text-label-md text-on-surface-variant">Usuario SOL principal</label>
                     <input type="text" wire:model="sunat_username" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
@@ -174,8 +180,8 @@
             @endif
 
             <div class="border-t border-outline-variant pt-4 mt-4">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <div class="text-body-md font-medium text-on-surface">Modo Producción</div>
                         <div class="text-body-sm text-on-surface-variant mt-0.5">Envío real a SUNAT (beta para pruebas)</div>
                     </div>
@@ -193,13 +199,13 @@
                 @else
                     <div class="mt-3 flex items-center gap-2 px-3 py-2 bg-primary-fixed border border-primary/20 rounded-xl">
                         <span class="material-symbols-outlined text-primary text-sm">science</span>
-                        <span class="text-body-sm text-primary-dark">Modo beta: se usan las series de prueba (PR01, PR02, PR03, PR04) sin tocar la numeración real.</span>
+                        <span class="text-body-sm text-primary-dark">Modo beta: se usan las series de prueba (BP01, FP01, BC01, FC01) sin tocar la numeración real.</span>
                     </div>
                 @endif
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
+        <div class="bg-white rounded-2xl border border-outline-variant p-4 sm:p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-1">
                 <span class="material-symbols-outlined text-primary text-xl">chat</span>
                 <h3 class="text-body-lg font-semibold text-on-surface">WhatsApp (WAHA)</h3>
@@ -209,8 +215,8 @@
             </p>
 
             <div class="border-b border-outline-variant pb-4 mb-4">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <div class="text-body-md font-medium text-on-surface">Envío automático</div>
                         <div class="text-body-sm text-on-surface-variant mt-0.5">Al aceptarse una boleta, factura o nota de crédito.</div>
                     </div>
@@ -222,7 +228,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 [&>*]:min-w-0">
                 <div>
                     <label class="text-label-md text-on-surface-variant">Nombre de la sesión</label>
                     <input type="text" wire:model="whatsapp_session" maxlength="50" placeholder="default"
@@ -275,7 +281,7 @@
                     @error('whatsapp_test_phone') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                 </div>
                 <button type="button" wire:click="testWhatsApp" wire:loading.attr="disabled"
-                        class="px-4 py-3 border border-primary text-primary-dark rounded-xl text-body-sm font-semibold flex items-center gap-2 hover:opacity-80 transition-opacity disabled:opacity-50">
+                        class="w-full sm:w-auto px-4 py-3 border border-primary text-primary-dark rounded-xl text-body-sm font-semibold flex items-center justify-center gap-2 hover:opacity-80 transition-opacity disabled:opacity-50">
                     <span class="material-symbols-outlined text-base">send</span>
                     Probar envío
                 </button>
@@ -308,12 +314,12 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
+        <div class="bg-white rounded-2xl border border-outline-variant p-4 sm:p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-5">
                 <span class="material-symbols-outlined text-primary text-xl">badge</span>
                 <h3 class="text-body-lg font-semibold text-on-surface">Certificado Digital</h3>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 [&>*]:min-w-0">
                 <div>
                     <input type="file" wire:model="certificate" accept=".pem,.crt,.cer,.pfx,.p12"
                            class="block w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-fixed file:text-primary hover:file:bg-primary-container file:cursor-pointer">
@@ -351,7 +357,7 @@
             @endif
         </div>
 
-        <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm mb-6">
+        <div class="bg-white rounded-2xl border border-outline-variant p-4 sm:p-6 shadow-sm mb-6">
             <div class="flex items-center gap-2 mb-1">
                 <span class="material-symbols-outlined text-primary text-xl">tag</span>
                 <h3 class="text-body-lg font-semibold text-on-surface">Series de comprobantes</h3>
@@ -359,7 +365,7 @@
             <p class="text-body-sm text-on-surface-variant mb-5">
                 Series con las que este sistema emite ante SUNAT. Deben estar libres en el otro sistema para evitar duplicados.
             </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 [&>*]:min-w-0">
                 <div>
                     <label class="text-label-md text-on-surface-variant">Boleta de venta</label>
                     <input type="text" wire:model="boleta_serie" maxlength="10" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="B002">
@@ -382,8 +388,8 @@
                 </div>
             </div>
             <div class="border-t border-outline-variant pt-4 mt-4">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="flex items-center gap-2">
+                <div class="flex items-center justify-between mb-1 gap-3">
+                    <div class="flex items-center gap-2 min-w-0">
                         <span class="material-symbols-outlined text-primary text-lg">science</span>
                         <span class="text-body-md font-semibold text-on-surface">Series de pruebas (beta)</span>
                     </div>
@@ -394,27 +400,27 @@
                     @endif
                 </div>
                 <p class="text-body-sm text-on-surface-variant mb-3">Se usan cuando Modo Producción está apagado, para probar sin consumir la numeración real.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 [&>*]:min-w-0">
                     <div>
                         <label class="text-label-md text-on-surface-variant">Boleta de venta</label>
-                        <input type="text" wire:model="boleta_serie_beta" maxlength="4" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="PR01">
+                        <input type="text" wire:model="boleta_serie_beta" maxlength="4" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="BP01">
                         <p class="mt-1 text-xs text-on-surface-variant">4 caracteres (letras y números). Próxima: <strong>{{ $boleta_numero_beta }}</strong></p>
                         @error('boleta_serie_beta') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="text-label-md text-on-surface-variant">Factura</label>
-                        <input type="text" wire:model="factura_serie_beta" maxlength="4" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="PR02">
+                        <input type="text" wire:model="factura_serie_beta" maxlength="4" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="FP01">
                         <p class="mt-1 text-xs text-on-surface-variant">4 caracteres (letras y números). Próxima: <strong>{{ $factura_numero_beta }}</strong></p>
                         @error('factura_serie_beta') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="text-label-md text-on-surface-variant">Nota de crédito de boleta</label>
-                        <input type="text" wire:model="nc_boleta_serie_beta" maxlength="4" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="PR03">
+                        <input type="text" wire:model="nc_boleta_serie_beta" maxlength="4" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="BC01">
                         @error('nc_boleta_serie_beta') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="text-label-md text-on-surface-variant">Nota de crédito de factura</label>
-                        <input type="text" wire:model="nc_factura_serie_beta" maxlength="4" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="PR04">
+                        <input type="text" wire:model="nc_factura_serie_beta" maxlength="4" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1" placeholder="FC01">
                         @error('nc_factura_serie_beta') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -424,8 +430,10 @@
             </p>
         </div>
 
-        <div class="flex justify-end">
-            <button type="submit" class="px-6 py-3 bg-primary text-on-primary rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
+        <div class="flex flex-wrap justify-end items-center gap-2 sm:gap-3">
+            <span wire:loading wire:target="save" class="text-body-sm text-on-surface-variant">Guardando...</span>
+            <button type="submit" wire:loading.attr="disabled" wire:target="save"
+                    class="w-full sm:w-auto px-6 py-3 bg-primary text-on-primary rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md disabled:opacity-60">
                 <span class="material-symbols-outlined text-lg">save</span>
                 Guardar Configuración
             </button>

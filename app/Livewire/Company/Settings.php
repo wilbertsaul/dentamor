@@ -60,13 +60,13 @@ class Settings extends Component
 
     public $nc_factura_serie = 'FC02';
 
-    public $boleta_serie_beta = 'PR01';
+    public $boleta_serie_beta = 'BP01';
 
-    public $factura_serie_beta = 'PR02';
+    public $factura_serie_beta = 'FP01';
 
-    public $nc_boleta_serie_beta = 'PR03';
+    public $nc_boleta_serie_beta = 'BC01';
 
-    public $nc_factura_serie_beta = 'PR04';
+    public $nc_factura_serie_beta = 'FC01';
 
     public $boleta_numero = 1;
 
@@ -157,16 +157,21 @@ class Settings extends Component
             'factura_serie' => 'required|string|max:10|regex:/^F\d{3}$/',
             'nc_boleta_serie' => 'required|string|max:10|regex:/^BC\d{2}$/',
             'nc_factura_serie' => 'required|string|max:10|regex:/^FC\d{2}$/',
-            'boleta_serie_beta' => 'required|string|max:4|regex:/^[A-Z0-9]{4}$/',
-            'factura_serie_beta' => 'required|string|max:4|regex:/^[A-Z0-9]{4}$/',
-            'nc_boleta_serie_beta' => 'required|string|max:4|regex:/^[A-Z0-9]{4}$/',
-            'nc_factura_serie_beta' => 'required|string|max:4|regex:/^[A-Z0-9]{4}$/',
+            'boleta_serie_beta' => 'required|string|max:4|regex:/^B[A-Z0-9]{3}$/',
+            'factura_serie_beta' => 'required|string|max:4|regex:/^F[A-Z0-9]{3}$/',
+            'nc_boleta_serie_beta' => 'required|string|max:4|regex:/^BC[A-Z0-9]{2}$/',
+            'nc_factura_serie_beta' => 'required|string|max:4|regex:/^FC[A-Z0-9]{2}$/',
             'certificate' => ['nullable', 'file', 'extensions:'.implode(',', CertificateService::EXTENSIONS), 'max:2048'],
             'certificate_password' => 'nullable',
             'logo' => 'nullable|file|mimes:png,jpg,jpeg,gif|max:2048',
             'production' => 'boolean',
             'whatsapp_enabled' => 'boolean',
             'whatsapp_session' => 'nullable|max:50',
+        ], [
+            'boleta_serie_beta.regex' => 'La serie de boleta beta debe tener 4 caracteres y empezar con B (ej. BP01).',
+            'factura_serie_beta.regex' => 'La serie de factura beta debe tener 4 caracteres y empezar con F (ej. FP01).',
+            'nc_boleta_serie_beta.regex' => 'La nota de crédito de boleta beta debe empezar con BC (ej. BC01).',
+            'nc_factura_serie_beta.regex' => 'La nota de crédito de factura beta debe empezar con FC (ej. FC01).',
         ]);
 
         $data = [

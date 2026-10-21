@@ -123,22 +123,22 @@ class Company extends Model
      */
     public function boletaSerieBeta(): string
     {
-        return $this->boleta_serie_beta ?: 'PR01';
+        return $this->boleta_serie_beta ?: 'BP01';
     }
 
     public function facturaSerieBeta(): string
     {
-        return $this->factura_serie_beta ?: 'PR02';
+        return $this->factura_serie_beta ?: 'FP01';
     }
 
     public function ncBoletaSerieBeta(): string
     {
-        return $this->nc_boleta_serie_beta ?: 'PR03';
+        return $this->nc_boleta_serie_beta ?: 'BC01';
     }
 
     public function ncFacturaSerieBeta(): string
     {
-        return $this->nc_factura_serie_beta ?: 'PR04';
+        return $this->nc_factura_serie_beta ?: 'FC01';
     }
 
     public function whatsappConfigured(): bool
