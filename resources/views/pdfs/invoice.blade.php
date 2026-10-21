@@ -33,6 +33,8 @@
     <div class="header">
         @if($logoBase64)
             <div style="margin-bottom:8px;"><img src="{{ $logoBase64 }}" alt="Logo" style="height:60px;"></div>
+        @else
+            <div style="margin-bottom:8px;"><img src="{{ public_path('images/logo-dentamor.png') }}" alt="Dentamor" style="height:60px;"></div>
         @endif
         <h1>{{ $invoice->company->business_name }}</h1>
         <p class="ruc">RUC: {{ $invoice->company->ruc }}</p>

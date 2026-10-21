@@ -475,11 +475,13 @@ class Create extends Component
             return;
         }
 
-        try {
-            WhatsAppService::sendInvoice($invoice->fresh(['client', 'company']), $this->customer_phone);
-        } catch (\Throwable $e) {
-            Log::warning('WhatsApp send failed: '.$e->getMessage());
-        }
+        app()->terminating(function () use ($invoice) {
+            try {
+                WhatsAppService::sendInvoice($invoice->fresh(['client', 'company']), $this->customer_phone);
+            } catch (\Throwable $e) {
+                Log::warning('WhatsApp send failed: '.$e->getMessage());
+            }
+        });
     }
 
     public function render()

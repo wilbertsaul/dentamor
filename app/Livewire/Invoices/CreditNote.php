@@ -202,11 +202,13 @@ class CreditNote extends Component
             return;
         }
 
-        try {
-            WhatsAppService::sendInvoice($creditNote->fresh(['client', 'company']), $this->customer_phone);
-        } catch (\Throwable $e) {
-            Log::warning('WhatsApp send failed: '.$e->getMessage());
-        }
+        app()->terminating(function () use ($creditNote) {
+            try {
+                WhatsAppService::sendInvoice($creditNote->fresh(['client', 'company']), $this->customer_phone);
+            } catch (\Throwable $e) {
+                Log::warning('WhatsApp send failed: '.$e->getMessage());
+            }
+        });
     }
 
     public function render()
