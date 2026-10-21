@@ -1,18 +1,18 @@
-<div class="max-w-5xl mx-auto space-y-8">
+<div class="max-w-5xl mx-auto w-full space-y-6 sm:space-y-8">
 
-    <div class="flex flex-col md:flex-row items-center gap-3">
-        <a href="{{ route('invoices.index') }}" class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant transition-colors">
+    <div class="flex flex-col sm:flex-row sm:items-center items-start gap-3">
+        <a href="{{ route('invoices.index') }}" class="p-2 shrink-0 hover:bg-surface-container rounded-full text-on-surface-variant transition-colors">
             <span class="material-symbols-outlined">arrow_back</span>
         </a>
-        <div>
+        <div class="min-w-0">
             <h1 class="text-headline-md text-on-surface">Nuevo Comprobante</h1>
             <p class="text-body-md text-on-surface-variant">Completa los datos para generar una factura o boleta electrónica.</p>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
-        <div class="md:col-span-8 space-y-6">
-            <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm custom-shadow">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8">
+        <div class="md:col-span-8 space-y-6 min-w-0">
+            <div class="bg-white rounded-2xl border border-outline-variant p-4 sm:p-6 shadow-sm custom-shadow">
                 <div class="flex items-center gap-3 mb-5">
                     <span class="material-symbols-outlined text-primary">person_search</span>
                     <h2 class="text-headline-sm font-headline-sm text-on-surface">Datos del Cliente</h2>
@@ -21,23 +21,23 @@
                 <div class="space-y-4">
                     <div>
                         <label class="text-label-md text-on-surface-variant block mb-1">Tipo de Comprobante</label>
-                        <div class="flex gap-2">
+                        <div class="flex flex-wrap gap-2">
                             <button type="button" wire:click="$set('invoice_type', 'B')"
-                                    class="flex-1 py-3 text-label-md rounded-xl border-2 transition-all
+                                    class="flex-1 min-w-[110px] py-3 text-label-md rounded-xl border-2 transition-all
                                            {{ $invoice_type === 'B'
                                               ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
                                               : 'bg-transparent text-on-surface-variant border-outline-variant hover:bg-surface-container-low' }}">
                                 Boleta ({{ $this->serieActiva('B') }})
                             </button>
                             <button type="button" wire:click="$set('invoice_type', 'F')"
-                                    class="flex-1 py-3 text-label-md rounded-xl border-2 transition-all
+                                    class="flex-1 min-w-[110px] py-3 text-label-md rounded-xl border-2 transition-all
                                            {{ $invoice_type === 'F'
                                               ? 'bg-primary text-on-primary border-primary shadow-sm'
                                               : 'bg-transparent text-on-surface-variant border-outline-variant hover:bg-surface-container-low' }}">
                                 Factura ({{ $this->serieActiva('F') }})
                             </button>
                             <button type="button" wire:click="$set('invoice_type', 'R')"
-                                    class="flex-1 py-3 text-label-md rounded-xl border-2 transition-all
+                                    class="flex-1 min-w-[110px] py-3 text-label-md rounded-xl border-2 transition-all
                                            {{ $invoice_type === 'R'
                                               ? 'bg-secondary text-on-secondary border-secondary shadow-sm'
                                               : 'bg-transparent text-on-surface-variant border-outline-variant hover:bg-surface-container-low' }}">
@@ -59,7 +59,7 @@
                         <div class="flex gap-2">
                             <input type="text" wire:model.live="searchDoc"
                                    placeholder="Ej: 20546789015 o 46789015"
-                                   class="flex-1 px-4 py-3 bg-surface-container-low border-none rounded-xl text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary outline-none transition-all">
+                                   class="flex-1 min-w-0 w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary outline-none transition-all">
                             <button type="button" wire:click="searchClient" wire:loading.attr="disabled"
                                     class="px-4 py-3 bg-primary text-on-primary rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50">
                                 <span class="material-symbols-outlined" wire:loading.remove wire:target="searchClient">search</span>
@@ -84,15 +84,15 @@
                         @endif
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="min-w-0">
                             <label class="text-label-md text-on-surface-variant block mb-1">Razón Social / Nombres</label>
                             <input type="text" wire:model.blur="clientName" value="{{ $clientName }}"
                                    placeholder="{{ $clientName ? '' : 'Se autocompleta al buscar' }}"
                                    {{ $client_id ? 'readonly' : '' }}
                                    class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary outline-none transition-all {{ $client_id ? 'bg-surface-container-highest text-on-surface-variant' : '' }}">
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <label class="text-label-md text-on-surface-variant block mb-1">Dirección</label>
                             <input type="text" wire:model.blur="clientAddress" value="{{ $clientAddress }}"
                                    placeholder="{{ $clientAddress ? '' : 'Dirección registrada' }}"
@@ -102,8 +102,8 @@
                     </div>
 
                     @if($invoice_type !== 'R')
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant block mb-1">WhatsApp (opcional)</label>
                                 <input type="text" wire:model.blur="customer_phone"
                                        placeholder="Ej: 987654321"
@@ -113,7 +113,7 @@
                                     <p class="text-sm text-error mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant block mb-1">Correo (opcional)</label>
                                 <input type="email" wire:model.blur="customer_email"
                                        placeholder="cliente@correo.com"
@@ -135,41 +135,40 @@
             </div>
 
             <div class="bg-white rounded-2xl border border-outline-variant shadow-sm custom-shadow">
-                <div class="flex items-center justify-between p-6 pb-0">
-                    <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 p-4 pb-0 sm:p-6 sm:pb-0">
+                    <div class="flex items-center gap-3 min-w-0">
                         <span class="material-symbols-outlined text-primary">table_rows</span>
                         <h2 class="text-headline-sm font-headline-sm text-on-surface">Detalle de Items</h2>
                     </div>
                     <button type="button" wire:click="addItem"
-                            class="px-4 py-2 bg-surface-container-high rounded-xl text-primary text-label-md hover:bg-primary-container transition-colors flex items-center gap-2">
+                            class="shrink-0 px-4 py-2 bg-surface-container-high rounded-xl text-primary text-label-md hover:bg-primary-container transition-colors flex items-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">add</span>
                         Agregar
                     </button>
                 </div>
 
-                <div class="p-6">
-                    <div class="overflow-x-auto custom-scrollbar">
-                        <table class="w-full border-collapse">
-                            <thead>
+                <div class="p-4 sm:p-6">
+                        <table class="w-full border-collapse max-lg:block lg:table-fixed">
+                            <thead class="max-lg:hidden">
                                 <tr class="border-b border-outline-variant text-label-md">
-                                    <th class="text-left py-3 px-2 text-on-surface-variant w-20">Cant.</th>
+                                    <th class="text-left py-3 px-2 text-on-surface-variant w-28">Cant.</th>
                                     <th class="text-left py-3 px-2 text-on-surface-variant">Descripción</th>
-                                    <th class="text-right py-3 px-2 text-on-surface-variant w-32">P. Unit.</th>
-                                    <th class="text-right py-3 px-2 text-on-surface-variant w-32">Total</th>
-                                    <th class="w-12"></th>
+                                    <th class="text-right py-3 px-2 text-on-surface-variant w-36">P. Unit.</th>
+                                    <th class="text-right py-3 px-2 text-on-surface-variant w-24">Total</th>
+                                    <th class="w-10"></th>
                                 </tr>
                             </thead>
-                            <tbody id="items-body" class="divide-y divide-outline-variant/50">
+                            <tbody id="items-body" class="max-lg:block lg:divide-y divide-outline-variant/50">
                                 @foreach($items as $index => $item)
-                                    <tr wire:key="item-{{ $index }}-{{ $item['service_id'] ?? '' }}" class="group hover:bg-surface-container-low/50 transition-colors">
-                                        <td class="py-3 px-2 align-top">
-                                            <div class="flex items-center gap-1 bg-surface-container-low rounded-xl px-2">
+                                    <tr wire:key="item-{{ $index }}-{{ $item['service_id'] ?? '' }}" class="group hover:bg-surface-container-low/50 transition-colors max-lg:grid max-lg:grid-cols-2 max-lg:gap-x-4 max-lg:gap-y-2 max-lg:mb-3 max-lg:border max-lg:border-outline-variant/70 max-lg:rounded-xl max-lg:p-3 max-lg:bg-surface-container-low/40">
+                                        <td class="py-3 px-2 align-top max-lg:col-span-2 max-lg:px-0 max-lg:py-0">
+                                            <div class="flex items-center gap-1 bg-surface-container-low rounded-xl px-2 max-lg:w-fit">
                                                 <button type="button" wire:click="$set('items.{{ $index }}.quantity', max(1, (int){{ $item['quantity'] }} - 1))"
                                                         class="p-1 text-on-surface-variant hover:text-primary transition-colors">
                                                     <span class="material-symbols-outlined text-[18px]">remove</span>
                                                 </button>
                                                 <input type="text" inputmode="numeric" wire:model.live="items.{{ $index }}.quantity"
-                                                       class="w-12 text-center bg-transparent border-none py-2 text-body-md text-on-surface focus:ring-0 outline-none">
+                                                       class="w-10 text-center bg-transparent border-none py-2 text-body-md text-on-surface focus:ring-0 outline-none">
                                                 <button type="button" wire:click="$set('items.{{ $index }}.quantity', (int){{ $item['quantity'] }} + 1)"
                                                         class="p-1 text-on-surface-variant hover:text-primary transition-colors">
                                                     <span class="material-symbols-outlined text-[18px]">add</span>
@@ -177,7 +176,7 @@
                                             </div>
                                             @error("items.{$index}.quantity") <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                                         </td>
-                                        <td class="py-3 px-2 align-top">
+                                        <td class="py-3 px-2 align-top max-lg:col-span-2 max-lg:px-0 max-lg:py-0">
                                             <x-brand-select
                                                 :options="$services->map(fn($s) => ['id' => (string) $s->id, 'code' => $s->code, 'label' => $s->name])->values()->toArray()"
                                                 :selected="(string) ($item['service_id'] ?? '')"
@@ -191,21 +190,21 @@
                                                    class="w-full bg-transparent border-none px-3 py-1 text-body-sm text-on-surface-variant placeholder:text-outline focus:ring-0 outline-none">
                                             @error("items.{$index}.description") <p class="text-xs text-error mt-1">{{ $message }}</p> @enderror
                                         </td>
-                                        <td class="py-3 px-2 align-top">
-                                            <div class="flex items-center justify-end">
+                                        <td class="py-3 px-2 align-top max-lg:px-0 max-lg:py-0">
+                                            <div class="flex items-center justify-end max-lg:justify-start">
                                                 <span class="text-on-surface-variant mr-1">S/</span>
                                                 <input type="text" inputmode="decimal" wire:model.live="items.{{ $index }}.unit_price" value="{{ $item['unit_price'] }}"
-                                                       class="w-24 text-right bg-surface-container-low border-none rounded-xl px-3 py-2.5 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none">
+                                                       class="w-20 lg:w-24 text-right bg-surface-container-low border-none rounded-xl px-3 py-2.5 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none">
                                             </div>
                                             @error("items.{$index}.unit_price") <p class="text-xs text-error mt-1 text-right">{{ $message }}</p> @enderror
                                         </td>
-                                        <td class="py-3 px-2 align-top text-right text-body-md font-semibold text-on-surface whitespace-nowrap">
+                                        <td class="py-3 px-2 align-top text-right text-body-md font-semibold text-on-surface whitespace-nowrap max-lg:px-0 max-lg:py-0">
                                             S/ {{ number_format((float)($item['unit_price']??0) * (int)($item['quantity']??0), 2) }}
                                         </td>
-                                        <td class="py-3 px-2 align-top text-center">
+                                        <td class="py-3 px-2 align-top text-center max-lg:col-span-2 max-lg:px-0 max-lg:py-0 max-lg:text-right">
                                             @if(count($items) > 1)
                                                 <button type="button" wire:click="removeItem({{ $index }})"
-                                                        class="p-1.5 text-outline hover:text-error hover:bg-error-container/30 rounded-full transition-colors opacity-0 group-hover:opacity-100">
+                                                        class="p-1.5 text-outline hover:text-error hover:bg-error-container/30 rounded-full transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100">
                                                     <span class="material-symbols-outlined text-[18px]">close</span>
                                                 </button>
                                             @endif
@@ -214,7 +213,6 @@
                                 @endforeach
                             </tbody>
                         </table>
-                    </div>
 
                     @error('items')
                         <div class="mt-4 px-4 py-3 bg-error-container/30 rounded-xl text-sm text-error flex items-center gap-2">
@@ -226,8 +224,8 @@
             </div>
         </div>
 
-        <div class="md:col-span-4 space-y-6">
-            <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm custom-shadow relative overflow-hidden">
+        <div class="md:col-span-4 space-y-6 min-w-0">
+            <div class="bg-white rounded-2xl border border-outline-variant p-4 sm:p-6 shadow-sm custom-shadow relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed/40 rounded-full blur-3xl -mr-10 -mt-10"></div>
                 <div class="absolute bottom-0 left-0 w-24 h-24 bg-secondary-fixed/40 rounded-full blur-3xl -ml-5 -mb-5"></div>
 
@@ -238,15 +236,15 @@
                     </div>
 
                     <div class="space-y-3 text-label-md">
-                        <div class="flex justify-between text-on-surface-variant">
+                        <div class="flex justify-between gap-3 text-on-surface-variant">
                             <span>Subtotal:</span>
                             <span id="gen-subtotal" class="font-semibold text-on-surface">S/ {{ number_format($this->calcularSubtotal(), 2) }}</span>
                         </div>
-                        <div class="flex justify-between text-on-surface-variant">
+                        <div class="flex justify-between gap-3 text-on-surface-variant">
                             <span>IGV (18%):</span>
                             <span id="gen-igv" class="font-semibold text-on-surface">S/ {{ number_format($this->calcularIgv(), 2) }}</span>
                         </div>
-                        <div class="border-t border-outline-variant pt-3 mt-3 flex justify-between items-center">
+                        <div class="border-t border-outline-variant pt-3 mt-3 flex justify-between items-center gap-3">
                             <span class="font-bold text-on-surface text-body-lg">Total:</span>
                             <span id="gen-total" class="text-headline-sm font-headline-sm text-on-surface">S/ {{ number_format($this->calcularTotal(), 2) }}</span>
                         </div>
@@ -254,22 +252,22 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm custom-shadow">
+            <div class="bg-white rounded-2xl border border-outline-variant p-4 sm:p-6 shadow-sm custom-shadow">
                 <div class="flex items-center gap-3 mb-5">
                     <span class="material-symbols-outlined text-on-surface">receipt_long</span>
                     <h2 class="text-headline-sm font-headline-sm text-on-surface">Condiciones</h2>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-surface-container-low rounded-xl p-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div class="bg-surface-container-low rounded-xl p-2 min-w-0">
                             <span class="text-label-sm text-outline font-bold uppercase block mb-1">Serie</span>
                             <span class="text-body-md font-semibold text-on-surface">{{ $this->serieActiva($invoice_type) }}</span>
                         </div>
-                        <div class="bg-surface-container-low rounded-xl p-2">
+                        <div class="bg-surface-container-low rounded-xl p-2 min-w-0">
                             <span class="text-label-sm text-outline font-bold uppercase block mb-1">Fecha</span>
                             <input type="date" wire:model="issue_date"
-                                   class="bg-transparent border-none p-0 text-body-md font-semibold text-on-surface focus:ring-0 outline-none w-full">
+                                   class="bg-transparent border-none p-0 text-body-md font-semibold text-on-surface focus:ring-0 outline-none w-full min-w-0">
                         </div>
                     </div>
 

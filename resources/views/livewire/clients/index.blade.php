@@ -1,11 +1,11 @@
 <div class="space-y-6">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div class="relative w-full sm:w-80">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+        <div class="relative w-full sm:w-80 min-w-0">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Buscar cliente..."
                    class="w-full pl-10 pr-4 py-3 bg-surface-container-low border-none rounded-xl text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary outline-none transition-all">
         </div>
-        <button wire:click="create" class="shrink-0 px-5 py-3 bg-primary text-on-primary rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
+        <button wire:click="create" class="w-full sm:w-auto shrink-0 px-5 py-3 bg-primary text-on-primary rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
             <span class="material-symbols-outlined text-lg">person_add</span>
             Nuevo Cliente
         </button>
@@ -13,7 +13,7 @@
 
     <div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full">
+            <table class="w-full min-w-[640px]">
                 <thead>
                     <tr class="bg-surface-container-low border-b border-outline-variant">
                         <th class="px-5 py-3 text-left text-label-md text-on-surface-variant uppercase tracking-wider">Doc.</th>
@@ -31,8 +31,8 @@
                                 <span class="status-badge bg-primary-container text-secondary">{{ $client->doc_type }}</span>
                             </td>
                             <td class="px-5 py-3.5 text-body-sm text-on-surface-variant font-mono">{{ $client->doc_number }}</td>
-                            <td class="px-5 py-3.5 text-body-sm font-medium text-on-surface">{{ $client->name }}</td>
-                            <td class="px-5 py-3.5 text-body-sm text-on-surface-variant">{{ $client->email ?? '-' }}</td>
+                            <td class="px-5 py-3.5 text-body-sm font-medium text-on-surface break-words">{{ $client->name }}</td>
+                            <td class="px-5 py-3.5 text-body-sm text-on-surface-variant break-words">{{ $client->email ?? '-' }}</td>
                             <td class="px-5 py-3.5 text-body-sm text-on-surface-variant">{{ $client->phone ?? '-' }}</td>
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center justify-center gap-1">
@@ -65,9 +65,9 @@
     <div class="mt-4">{{ $clients->links() }}</div>
 
     @if($showModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto py-4">
             <div class="fixed inset-0 bg-on-surface/40" wire:click="$set('showModal', false)"></div>
-            <div class="relative bg-white rounded-2xl shadow-lg w-full max-w-lg mx-4 p-6 z-10 border border-outline-variant">
+            <div class="relative bg-white rounded-2xl shadow-lg w-full max-w-lg mx-4 my-auto p-4 sm:p-6 z-10 border border-outline-variant">
                 <div class="flex items-center gap-2 mb-5">
                     <span class="material-symbols-outlined text-primary text-xl">{{ $editMode ? 'edit' : 'person_add' }}</span>
                     <h3 class="text-body-lg font-semibold text-on-surface">{{ $editMode ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
@@ -95,13 +95,13 @@
                             <input type="text" wire:model="name" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
                             @error('name') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant">Email</label>
                                 <input type="email" wire:model="email" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
                                 @error('email') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant">Teléfono</label>
                                 <input type="text" wire:model="phone" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
                                 @error('phone') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
@@ -112,13 +112,13 @@
                             <textarea wire:model="address" rows="2" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1 resize-none"></textarea>
                         </div>
                     </div>
-                    <div class="flex justify-end gap-3 mt-6">
+                    <div class="flex flex-wrap justify-end gap-2 sm:gap-3 mt-6">
                         <button type="button" wire:click="$set('showModal', false)"
-                                class="px-5 py-2.5 bg-surface-container-high text-on-surface rounded-xl border border-outline-variant hover:bg-surface-container-highest transition-colors font-semibold text-body-md">
+                                class="flex-1 sm:flex-none px-5 py-2.5 bg-surface-container-high text-on-surface rounded-xl border border-outline-variant hover:bg-surface-container-highest transition-colors font-semibold text-body-md">
                             Cancelar
                         </button>
                         <button type="submit"
-                                class="px-5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
+                                class="flex-1 sm:flex-none px-5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
                             {{ $editMode ? 'Actualizar' : 'Guardar' }}
                         </button>
                     </div>

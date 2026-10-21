@@ -1,4 +1,6 @@
-<aside class="fixed left-0 top-0 h-screen hidden md:flex flex-col bg-white border-r border-outline-variant w-sidebar z-40 shadow-brand-soft">
+<div x-data="{ mobileOpen: false }" @keydown.escape.window="mobileOpen = false">
+<div x-show="mobileOpen" x-transition.opacity @click="mobileOpen = false" class="fixed inset-0 bg-on-surface/40 z-[55] md:hidden" style="display: none;"></div>
+<aside class="fixed left-0 top-0 h-screen w-sidebar z-[60] flex flex-col bg-white border-r border-outline-variant -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out shadow-brand-soft">
     <div class="px-5 pt-6 pb-5 border-b border-outline-variant/60 flex items-center">
         <x-logo :size="44" href="{{ route('dashboard') }}" subtitle="Odontología con Amor" />
     </div>
@@ -78,7 +80,7 @@
 
 <header class="fixed top-0 left-0 md:left-sidebar right-0 h-16 bg-white border-b border-outline-variant px-6 lg:px-8 flex items-center justify-between z-30">
     <div class="flex items-center gap-4">
-        <button class="md:hidden p-2 hover:bg-surface-container rounded-lg text-on-surface">
+        <button class="md:hidden p-2 hover:bg-surface-container rounded-lg text-on-surface" @click="mobileOpen = !mobileOpen" :aria-expanded="mobileOpen.toString()" aria-label="Abrir menú">
             <span class="material-symbols-outlined">menu</span>
         </button>
         <div class="hidden md:flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-3 py-1 rounded-full text-xs font-semibold">
@@ -129,3 +131,4 @@
         <span class="text-[9px] uppercase tracking-tighter mt-0.5">Más</span>
     </a>
 </nav>
+</div>

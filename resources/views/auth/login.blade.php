@@ -37,14 +37,14 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-between pt-2">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
             @if (Route::has('password.request'))
                 <a class="text-body-sm text-primary-dark hover:text-primary-hover font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" href="{{ route('password.request') }}">
                     ¿Olvidaste tu contraseña?
                 </a>
             @endif
 
-            <x-primary-button class="!px-6">
+            <x-primary-button class="w-full sm:w-auto !px-6">
                 Ingresar
             </x-primary-button>
         </div>

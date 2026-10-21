@@ -1,24 +1,24 @@
-<div class="max-w-3xl space-y-6">
-    <div class="flex items-center gap-3">
-        <a href="{{ route('invoices.index') }}" class="p-2 rounded-xl hover:bg-surface-container-highest transition-colors">
+<div class="max-w-3xl w-full space-y-6">
+    <div class="flex items-start sm:items-center gap-3">
+        <a href="{{ route('invoices.index') }}" class="p-2 shrink-0 rounded-xl hover:bg-surface-container-highest transition-colors">
             <span class="material-symbols-outlined">arrow_back</span>
         </a>
-        <div>
+        <div class="min-w-0">
             <h2 class="text-body-lg font-semibold text-on-surface">Nota de crédito</h2>
-            <p class="text-body-sm text-on-surface-variant">
+            <p class="text-body-sm text-on-surface-variant break-words">
                 Comprobante afectado: <span class="font-semibold">{{ $invoice->full_number }}</span>
                 @if($invoice->client) · {{ $invoice->client->name }} @endif
             </p>
         </div>
     </div>
 
-    <div class="px-4 py-3 bg-surface-container-low rounded-xl border border-outline-variant text-body-sm text-on-surface-variant">
+    <div class="px-4 py-3 bg-surface-container-low rounded-xl border border-outline-variant text-body-sm text-on-surface-variant break-words">
         Se emitirá la serie <span class="font-semibold">{{ $serie }}</span> con el tipo 07, vinculada a
         <span class="font-semibold">{{ $invoice->full_number }}</span>.
         Reduce el importe pendiente de factura o boleta y no requiere anulación.
     </div>
 
-    <form wire:submit="emitir" class="bg-white rounded-2xl border border-outline-variant p-6 shadow-sm space-y-4">
+    <form wire:submit="emitir" class="bg-white rounded-2xl border border-outline-variant p-4 sm:p-6 shadow-sm space-y-4">
         <div>
             <label class="text-label-md text-on-surface-variant">Motivo (campo_desMotivo)</label>
             <input type="text" wire:model="motivo" maxlength="500"
@@ -26,15 +26,15 @@
             @error('motivo') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="min-w-0">
                 <label class="text-label-md text-on-surface-variant">WhatsApp (opcional)</label>
                 <input type="text" wire:model.blur="customer_phone" placeholder="Ej: 987654321"
                        class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
                 <p class="text-xs text-outline mt-1">Se envía al aceptarse en SUNAT.</p>
                 @error('customer_phone') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
             </div>
-            <div>
+            <div class="min-w-0">
                 <label class="text-label-md text-on-surface-variant">Correo (opcional)</label>
                 <input type="email" wire:model.blur="customer_email" placeholder="cliente@correo.com"
                        class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
@@ -42,8 +42,8 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
+        <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <table class="w-full min-w-[640px] text-left">
                 <thead>
                     <tr class="text-label-md text-on-surface-variant border-b border-outline-variant">
                         <th class="py-2">Descripción</th>
@@ -78,7 +78,7 @@
             </table>
         </div>
 
-        <div class="flex justify-end items-center gap-4 pt-2 border-t border-outline-variant">
+        <div class="flex flex-wrap justify-end items-center gap-4 pt-2 border-t border-outline-variant">
             <span class="text-body-md text-on-surface-variant">Total nota:</span>
             <span class="text-title-md font-bold text-primary">{{ number_format($this->total(), 2) }}</span>
         </div>
@@ -89,13 +89,13 @@
             </div>
         @endif
 
-        <div class="flex justify-end gap-3">
+        <div class="flex flex-col sm:flex-row justify-end gap-3">
             <a href="{{ route('invoices.index') }}"
-               class="px-5 py-3 border border-outline-variant rounded-xl text-body-sm font-semibold text-on-surface-variant hover:bg-surface-container-low transition-colors">
+               class="w-full sm:w-auto px-5 py-3 border border-outline-variant rounded-xl text-body-sm font-semibold text-on-surface-variant hover:bg-surface-container-low transition-colors text-center">
                 Cancelar
             </a>
             <button type="submit" wire:loading.attr="disabled"
-                    class="px-6 py-3 bg-primary text-on-primary rounded-xl flex items-center gap-2 font-bold text-body-md shadow-md hover:opacity-90 transition-opacity disabled:opacity-60">
+                    class="w-full sm:w-auto px-6 py-3 bg-primary text-on-primary rounded-xl flex items-center justify-center gap-2 font-bold text-body-md shadow-md hover:opacity-90 transition-opacity disabled:opacity-60">
                 <span class="material-symbols-outlined text-lg" wire:loading.remove wire:target="emitir">publish</span>
                 <span wire:loading wire:target="emitir">Enviando a SUNAT...</span>
                 <span wire:loading.remove wire:target="emitir">Emitir nota de crédito</span>

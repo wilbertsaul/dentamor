@@ -3,11 +3,11 @@
         @php $result = session('bulkResult'); @endphp
         <div class="px-4 py-3 rounded-xl border {{ $result['error'] > 0 ? 'bg-error-container/30 border-error/20 text-error' : 'bg-secondary-fixed/30 border-secondary/20 text-secondary' }} flex items-start gap-2">
             <span class="material-symbols-outlined text-lg mt-0.5">{{ $result['error'] > 0 ? 'warning' : 'check_circle' }}</span>
-            <div>
+            <div class="min-w-0">
                 <p class="font-semibold">Proceso completado.</p>
                 <p class="text-body-sm">Facturados: {{ $result['success'] }} | Errores: {{ $result['error'] }} @if($result['error'] > 0)(esos pagos siguen pendientes) @endif</p>
                 @if(!empty($result['errors']))
-                    <ul class="mt-2 text-body-sm list-disc list-inside">
+                    <ul class="mt-2 text-body-sm list-disc list-inside break-words">
                         @foreach($result['errors'] as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -21,11 +21,11 @@
         @php $result = session('importResult'); @endphp
         <div class="px-4 py-3 rounded-xl border {{ count($result['errors']) > 0 ? 'bg-error-container/30 border-error/20 text-error' : 'bg-secondary-fixed/30 border-secondary/20 text-secondary' }} flex items-start gap-2">
             <span class="material-symbols-outlined text-lg mt-0.5">{{ count($result['errors']) > 0 ? 'warning' : 'check_circle' }}</span>
-            <div>
+            <div class="min-w-0">
                 <p class="font-semibold">Importación completa.</p>
                 <p class="text-body-sm">Importados: {{ $result['imported'] }} | Errores: {{ count($result['errors']) }}</p>
                 @if(!empty($result['errors']))
-                    <ul class="mt-2 text-body-sm list-disc list-inside">
+                    <ul class="mt-2 text-body-sm list-disc list-inside break-words">
                         @foreach($result['errors'] as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -38,16 +38,16 @@
     @if (session('error'))
         <div class="px-4 py-3 rounded-xl border bg-error-container/30 border-error/20 text-error flex items-center gap-2">
             <span class="material-symbols-outlined text-lg">warning</span>
-            <p class="text-body-sm">{{ session('error') }}</p>
+            <p class="text-body-sm break-words">{{ session('error') }}</p>
         </div>
     @endif
 
-    <div>
+    <div class="min-w-0">
         <h1 class="text-headline-md text-on-surface">Facturar en Bloque</h1>
-        <p class="text-body-md text-on-surface-variant mt-0.5">Genera comprobantes desde pagos pendientes o desde el Reporte de Abono de Izipay</p>
+        <p class="text-body-md text-on-surface-variant mt-0.5 break-words">Genera comprobantes desde pagos pendientes o desde el Reporte de Abono de Izipay</p>
     </div>
 
-    <div class="flex gap-1 border-b border-outline-variant">
+    <div class="flex flex-wrap gap-1 border-b border-outline-variant">
         <button wire:click="setTab('pendientes')"
                 class="px-4 py-2.5 text-body-sm font-semibold -mb-px border-b-2 transition-colors {{ $tab === 'pendientes' ? 'border-primary text-primary-dark' : 'border-transparent text-on-surface-variant hover:text-on-surface' }}">
             Pagos pendientes ({{ $payments->count() }})
@@ -61,18 +61,18 @@
 
     @if($tab === 'excel')
         <div class="space-y-5">
-            <div class="bg-white rounded-2xl border border-outline-variant shadow-sm p-6">
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                    <div>
+            <div class="bg-white rounded-2xl border border-outline-variant shadow-sm p-4 sm:p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+                    <div class="min-w-0">
                         <h2 class="font-bold text-body-md font-headline-md text-on-surface">Reporte de Abono de Izipay</h2>
-                        <p class="text-body-sm text-on-surface-variant mt-0.5">Sube el .xlsx/.xls que exportas desde Izipay. Detectarás el POS desde la columna <span class="font-mono">CODIGO</span> y las filas con <span class="font-mono">IMPORTE > 0</span>.</p>
+                        <p class="text-body-sm text-on-surface-variant mt-0.5 break-words">Sube el .xlsx/.xls que exportas desde Izipay. Detectarás el POS desde la columna <span class="font-mono">CODIGO</span> y las filas con <span class="font-mono">IMPORTE > 0</span>.</p>
                     </div>
-                    <button wire:click="resetExcel" class="px-4 py-2.5 border border-outline-variant text-on-surface-variant hover:bg-surface-container-low rounded-xl text-body-sm font-medium flex items-center gap-1.5 transition-colors">
+                    <button wire:click="resetExcel" class="shrink-0 px-4 py-2.5 border border-outline-variant text-on-surface-variant hover:bg-surface-container-low rounded-xl text-body-sm font-medium flex items-center gap-1.5 transition-colors">
                         <span class="material-symbols-outlined text-base">delete_sweep</span> Limpiar
                     </button>
                 </div>
 
-                <div class="mt-5 border-2 border-dashed border-outline-variant rounded-2xl p-8 text-center hover:border-primary transition-colors">
+                <div class="mt-5 border-2 border-dashed border-outline-variant rounded-2xl p-6 sm:p-8 text-center hover:border-primary transition-colors">
                     <span class="material-symbols-outlined text-5xl text-primary mb-3 block">upload_file</span>
                     <p class="text-body-sm text-on-surface-variant mb-4">Formatos: .xlsx (Reporte de Abono)</p>
                     <input type="file" wire:model="file"
@@ -99,7 +99,7 @@
                 @endif
 
                 <button wire:click="processUpload"
-                        class="mt-4 px-6 py-3 bg-primary text-on-primary rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md disabled:opacity-50"
+                        class="mt-4 w-full sm:w-auto px-6 py-3 bg-primary text-on-primary rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md disabled:opacity-50"
                         @if(!$file) disabled @endif>
                     <span class="material-symbols-outlined text-lg">tune</span>
                     Procesar archivo
@@ -113,8 +113,8 @@
                     $selectedCount = count($selectedRows);
                 @endphp
                 <div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
-                    <div class="border-b border-outline-variant p-5 flex flex-wrap items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
+                    <div class="border-b border-outline-variant p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+                        <div class="flex flex-wrap items-center gap-3 sm:gap-4">
                             <label class="flex items-center gap-2 text-body-sm text-on-surface-variant cursor-pointer">
                                 <input type="checkbox" wire:click="toggleAllRows" class="w-4 h-4 text-primary border-outline rounded focus:ring-primary">
                                 Seleccionar todo
@@ -127,7 +127,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-wrap items-center gap-3 sm:gap-4">
                             <span class="text-body-sm text-on-surface-variant">{{ $selectedCount }} seleccionadas • <span class="font-bold text-primary-dark">S/ {{ number_format($selectedTotal, 2) }}</span></span>
                             <button wire:click="importSelected"
                                     class="px-5 py-2.5 bg-primary text-on-primary rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-sm shadow-md disabled:opacity-50"
@@ -139,7 +139,7 @@
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="min-w-full">
+                        <table class="w-full min-w-[1000px]">
                             <thead>
                                 <tr class="bg-surface-container-low border-b border-outline-variant">
                                     <th class="px-4 py-3 text-center w-12"></th>
@@ -218,16 +218,16 @@
             @endif
         </div>
     @else
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
             <p class="text-body-md text-on-surface-variant">Selecciona los pagos pendientes para generar comprobantes</p>
-            <div class="flex items-center gap-4">
+            <div class="flex flex-wrap items-center gap-3 sm:gap-4">
                 <label class="flex items-center gap-2 text-body-md text-on-surface-variant cursor-pointer">
                     <input type="checkbox" wire:click="toggleAll"
                            {{ count($selected) === $payments->count() && $payments->count() > 0 ? 'checked' : '' }}
                            class="w-4 h-4 text-primary border-outline rounded focus:ring-primary">
                     Seleccionar todo
                 </label>
-                <button wire:click="processSelected" class="px-5 py-3 bg-primary text-on-primary rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md disabled:opacity-50"
+                <button wire:click="processSelected" class="w-full sm:w-auto px-5 py-3 bg-primary text-on-primary rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md disabled:opacity-50"
                         @if(count($selected) === 0) disabled @endif>
                     <span class="material-symbols-outlined text-lg">send</span>
                     Facturar ({{ count($selected) }})
@@ -237,7 +237,7 @@
 
         <div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="min-w-full">
+                <table class="w-full min-w-[860px]">
                     <thead>
                         <tr class="bg-surface-container-low border-b border-outline-variant">
                             <th class="px-4 py-3 text-center w-12"></th>
@@ -256,7 +256,7 @@
                                     <input type="checkbox" wire:model="selected" value="{{ $payment->id }}"
                                            class="w-4 h-4 text-primary border-outline rounded focus:ring-primary">
                                 </td>
-                                <td class="px-5 py-3.5 text-body-sm font-medium text-on-surface">{{ $payment->client_name }}</td>
+                                <td class="px-5 py-3.5 text-body-sm font-medium text-on-surface break-words">{{ $payment->client_name }}</td>
                                 <td class="px-5 py-3.5 text-body-sm text-on-surface-variant font-mono">{{ $payment->client_doc ?? '-' }}</td>
                                 <td class="px-5 py-3.5 text-body-sm font-medium text-on-surface text-right">S/ {{ number_format($payment->amount, 2) }}</td>
                                 <td class="px-5 py-3.5">

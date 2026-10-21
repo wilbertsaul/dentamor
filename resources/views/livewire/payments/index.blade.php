@@ -1,6 +1,6 @@
 <div class="space-y-6">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div class="flex flex-wrap gap-2">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
             <button wire:click="$set('statusFilter', '')"
                     class="px-4 py-2 rounded-xl text-label-md border-2 transition-all
                            {{ $statusFilter === '' ? 'bg-primary text-on-primary border-primary' : 'bg-transparent text-on-surface-variant border-outline-variant hover:bg-surface-container-low' }}">
@@ -22,7 +22,7 @@
                 Omitidos
             </button>
         </div>
-        <button wire:click="create" class="shrink-0 px-5 py-3 bg-primary text-on-primary rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
+        <button wire:click="create" class="w-full sm:w-auto shrink-0 px-5 py-3 bg-primary text-on-primary rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
             <span class="material-symbols-outlined text-lg">add</span>
             Nuevo Pago
         </button>
@@ -30,7 +30,7 @@
 
     <div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full">
+            <table class="w-full min-w-[860px]">
                 <thead>
                     <tr class="bg-surface-container-low border-b border-outline-variant">
                         <th class="px-5 py-3 text-left text-label-md text-on-surface-variant uppercase tracking-wider">Cliente</th>
@@ -45,7 +45,7 @@
                 <tbody class="divide-y divide-outline-variant/50">
                     @forelse($payments as $payment)
                         <tr class="data-table-row">
-                            <td class="px-5 py-3.5 text-body-sm font-medium text-on-surface">{{ $payment->client_name }}</td>
+                            <td class="px-5 py-3.5 text-body-sm font-medium text-on-surface break-words">{{ $payment->client_name }}</td>
                             <td class="px-5 py-3.5 text-body-sm text-on-surface-variant font-mono">{{ $payment->client_doc ?? '-' }}</td>
                             <td class="px-5 py-3.5 text-body-sm font-medium text-on-surface text-right">S/ {{ number_format($payment->amount, 2) }}</td>
                             <td class="px-5 py-3.5">
@@ -94,33 +94,33 @@
     <div class="mt-4">{{ $payments->links() }}</div>
 
     @if($showForm)
-        <div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
+        <div class="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto py-4">
             <div class="fixed inset-0 bg-on-surface/40" wire:click="$set('showForm', false)"></div>
-            <div class="relative bg-white rounded-2xl shadow-lg w-full max-w-lg mx-4 p-6 z-10 border border-outline-variant">
-                <div class="flex items-center gap-2 mb-5">
+            <div class="relative bg-white rounded-2xl shadow-lg w-full max-w-lg mx-4 p-4 sm:p-6 z-10 border border-outline-variant max-h-[calc(100vh-2rem)] flex flex-col">
+                <div class="flex items-center gap-2 mb-5 shrink-0">
                     <span class="material-symbols-outlined text-primary text-xl">payments</span>
                     <h3 class="text-body-lg font-semibold text-on-surface">Nuevo Registro de Pago</h3>
                 </div>
-                <form wire:submit="save">
-                    <div class="space-y-4">
-                        <div>
+                <form wire:submit="save" class="flex flex-col min-h-0 flex-1">
+                    <div class="space-y-4 min-h-0 flex-1 max-h-[calc(100vh-9rem)] overflow-y-auto pr-1">
+                        <div class="min-w-0">
                             <label class="text-label-md text-on-surface-variant">Nombre del Cliente</label>
                             <input type="text" wire:model="client_name" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
                             @error('client_name') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant">N° Documento</label>
                                 <input type="text" wire:model="client_doc" maxlength="15" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant">Monto (S/)</label>
                                 <input type="number" step="0.01" min="0" wire:model="amount" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
                                 @error('amount') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant">Método de Pago</label>
                                 <x-brand-select
                                     large
@@ -133,7 +133,7 @@
                                 />
                                 @error('payment_method') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant">Tipo Comprobante</label>
                                 <x-brand-select
                                     large
@@ -144,28 +144,28 @@
                                 />
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant">Referencia</label>
                                 <input type="text" wire:model="reference" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 <label class="text-label-md text-on-surface-variant">Fecha de Pago</label>
                                 <input type="datetime-local" wire:model="payment_date" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1">
                             </div>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <label class="text-label-md text-on-surface-variant">Notas</label>
                             <textarea wire:model="notes" rows="2" class="w-full bg-surface-container-low border-none rounded-xl px-4 py-3 text-body-md text-on-surface focus:ring-2 focus:ring-primary outline-none mt-1 resize-none"></textarea>
                         </div>
                     </div>
-                    <div class="flex justify-end gap-3 mt-6">
+                    <div class="flex flex-wrap justify-end gap-3 mt-6 shrink-0">
                         <button type="button" wire:click="$set('showForm', false)"
-                                class="px-5 py-2.5 bg-surface-container-high text-on-surface rounded-xl border border-outline-variant hover:bg-surface-container-highest transition-colors font-semibold text-body-md">
+                                class="w-full sm:w-auto px-5 py-2.5 bg-surface-container-high text-on-surface rounded-xl border border-outline-variant hover:bg-surface-container-highest transition-colors font-semibold text-body-md">
                             Cancelar
                         </button>
                         <button type="submit"
-                                class="px-5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
+                                class="w-full sm:w-auto px-5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-opacity font-bold text-body-md shadow-md">
                             Guardar
                         </button>
                     </div>
