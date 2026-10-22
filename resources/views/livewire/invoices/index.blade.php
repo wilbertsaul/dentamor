@@ -38,7 +38,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-2xl border border-outline-variant shadow-sm">
+    <div id="reservas" class="bg-white rounded-2xl border border-outline-variant shadow-sm">
         <div class="p-4 border-b border-outline-variant flex flex-wrap items-center justify-between gap-3 bg-surface-container-lowest">
             <div class="flex items-center gap-3 w-full md:w-auto min-w-0">
                 <div class="relative w-full md:w-80 min-w-0">
@@ -175,6 +175,13 @@
                                             <span class="material-symbols-outlined text-[18px]">send</span>
                                             Girar
                                         </a>
+                                        <button type="button"
+                                                wire:click="delete({{ $inv->id }})"
+                                                wire:confirm="¿Eliminar la reserva {{ $inv->full_number }}? Quedará anulada y no afecta a ningún comprobante SUNAT."
+                                                class="p-1.5 rounded-full text-on-surface-variant hover:bg-error-container/30 hover:text-error transition-colors"
+                                                title="Eliminar reserva">
+                                            <span class="material-symbols-outlined text-[20px]">delete</span>
+                                        </button>
                                     @else
                                     @if($inv->pdf_path)
                                         <a href="{{ route('invoices.pdf', $inv) }}" target="_blank"

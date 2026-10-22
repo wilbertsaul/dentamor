@@ -13,16 +13,59 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
+
     public $statusFilter = '';
+
     public $typeFilter = '';
+
     public $dateFrom = '';
+
     public $dateTo = '';
 
-    public function updatingSearch() { $this->resetPage(); }
-    public function updatingStatusFilter() { $this->resetPage(); }
-    public function updatingTypeFilter() { $this->resetPage(); }
-    public function updatingDateFrom() { $this->resetPage(); }
-    public function updatingDateTo() { $this->resetPage(); }
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDateFrom()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDateTo()
+    {
+        $this->resetPage();
+    }
+
+    public function delete(int $id): void
+    {
+        $invoice = Invoice::findOrFail($id);
+
+        if (! $invoice->canBeDeleted()) {
+            session()->flash('error', 'Solo se pueden eliminar reservas pendientes de girar.');
+
+            return;
+        }
+
+        $invoice->forceFill([
+            'sunat_status' => 'voided',
+            'sunat_description' => 'Reserva eliminada manualmente',
+        ])->save();
+
+        $invoice->delete();
+
+        session()->flash('message', 'Reserva '.$invoice->full_number.' eliminada.');
+    }
 
     public function render()
     {
@@ -30,12 +73,12 @@ class Index extends Component
 
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('serie', 'like', '%' . $this->search . '%')
-                  ->orWhere('number', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('client', function ($c) {
-                      $c->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('doc_number', 'like', '%' . $this->search . '%');
-                  });
+                $q->where('serie', 'like', '%'.$this->search.'%')
+                    ->orWhere('number', 'like', '%'.$this->search.'%')
+                    ->orWhereHas('client', function ($c) {
+                        $c->where('name', 'like', '%'.$this->search.'%')
+                            ->orWhere('doc_number', 'like', '%'.$this->search.'%');
+                    });
             });
         }
 

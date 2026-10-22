@@ -247,11 +247,9 @@ class Girar extends Component
             $pdfPath = null;
         }
 
-        // La reserva se marca como consumida; nunca se borra para conservar el historial.
-        $this->reservation->forceFill([
-            'is_reservation' => false,
-            'sunat_status' => 'converted',
-        ])->save();
+        // La reserva queda vinculada al comprobante y se oculta (soft delete):
+        // así no se lista ni suma otra vez en los totales.
+        $this->reservation->markConverted($invoice);
 
         $this->syncContactAndNotify($invoice, $company);
 

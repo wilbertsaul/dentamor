@@ -23,6 +23,7 @@ class Invoice extends Model
         'cdr_path', 'sunat_status', 'sunat_description', 'hash_cpe',
         'xml_path', 'pdf_path', 'production', 'is_reservation', 'reserved_at',
         'sunat_document_type', 'related_invoice_id', 'sunat_operation_id',
+        'converted_invoice_id',
         'sunat_environment', 'sunat_code', 'sunat_notes', 'sunat_ticket',
         'sunat_xml_name', 'sunat_sent_at',
         'customer_phone', 'customer_email', 'whatsapp_status',
@@ -77,6 +78,11 @@ class Invoice extends Model
         return $this->belongsTo(SunatOperation::class, 'sunat_operation_id');
     }
 
+    public function convertedInvoice()
+    {
+        return $this->belongsTo(self::class, 'converted_invoice_id');
+    }
+
     public function getFullNumberAttribute()
     {
         return "{$this->serie}-{$this->number}";
@@ -125,6 +131,27 @@ class Invoice extends Model
     public function isReservation(): bool
     {
         return (bool) $this->is_reservation;
+    }
+
+    public function isPendingReservation(): bool
+    {
+        return $this->isReservation() && $this->sunat_status !== 'converted';
+    }
+
+    public function canBeDeleted(): bool
+    {
+        return $this->isPendingReservation();
+    }
+
+    public function markConverted(Invoice $invoice): void
+    {
+        $this->forceFill([
+            'is_reservation' => false,
+            'sunat_status' => 'converted',
+            'converted_invoice_id' => $invoice->id,
+        ])->save();
+
+        $this->delete();
     }
 
     public function whatsappPhone(): ?string
