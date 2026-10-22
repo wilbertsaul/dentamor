@@ -7,8 +7,12 @@ namespace Tests\Feature;
 use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\SunatOperation;
+use App\Services\Sunat\ResponseMapper;
 use App\Services\Sunat\SummaryService;
 use App\Services\SunatService;
+use Greenter\Model\Response\CdrResponse;
+use Greenter\Model\Response\Error;
+use Greenter\Model\Response\StatusResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\TestCase;
@@ -112,6 +116,66 @@ class InvoiceVoidedServiceTest extends TestCase
         SummaryService::markVoidedDocuments($operation, 'rejected');
 
         $this->assertSame('accepted', $invoice->fresh()->sunat_status);
+    }
+
+    public function test_un_ticket_99_lee_el_cdr_y_registra_el_rechazo(): void
+    {
+        $invoice = $this->acceptedInvoice('B');
+        $operation = $this->operation($invoice, SunatOperation::TYPE_SUMMARY, true);
+
+        $status = (new StatusResult)
+            ->setCode('99')
+            ->setSuccess(true)
+            ->setCdrResponse((new CdrResponse)
+                ->setCode('2671')
+                ->setDescription('La fecha de generación del resumen debe ser mayor o igual a la fecha de emisión de los documentos'));
+
+        SummaryService::applyStatus($operation, $status);
+
+        $operation = $operation->fresh();
+
+        $this->assertSame(ResponseMapper::REJECTED, $operation->status);
+        $this->assertSame('2671', $operation->code);
+        $this->assertStringContainsString('fecha de generación', (string) $operation->description);
+        $this->assertNotNull($operation->resolved_at);
+        $this->assertSame('accepted', $invoice->fresh()->sunat_status);
+    }
+
+    public function test_un_ticket_98_sigue_en_proceso_y_no_anula_nada(): void
+    {
+        $invoice = $this->acceptedInvoice('B');
+        $operation = $this->operation($invoice, SunatOperation::TYPE_SUMMARY, true);
+
+        $status = (new StatusResult)
+            ->setCode('98')
+            ->setError(new Error('98', 'El procesamiento del comprobante aún no ha terminado'));
+
+        SummaryService::applyStatus($operation, $status);
+
+        $operation = $operation->fresh();
+
+        $this->assertSame('processing', $operation->status);
+        $this->assertSame('98', $operation->code);
+        $this->assertNull($operation->resolved_at);
+        $this->assertSame('accepted', $invoice->fresh()->sunat_status);
+    }
+
+    public function test_un_cdr_aceptado_anula_la_boleta(): void
+    {
+        $invoice = $this->acceptedInvoice('B');
+        $operation = $this->operation($invoice, SunatOperation::TYPE_SUMMARY, true);
+
+        $status = (new StatusResult)
+            ->setCode('0')
+            ->setSuccess(true)
+            ->setCdrResponse((new CdrResponse)
+                ->setCode('0')
+                ->setDescription('El comprobante ha sido aceptado'));
+
+        SummaryService::applyStatus($operation, $status);
+
+        $this->assertSame(ResponseMapper::ACCEPTED, $operation->fresh()->status);
+        $this->assertSame('voided', $invoice->fresh()->sunat_status);
     }
 
     private function operation(Invoice $invoice, string $type, bool $voids): SunatOperation

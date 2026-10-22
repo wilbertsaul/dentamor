@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\SunatOperation;
 use Carbon\Carbon;
+use Greenter\Model\Response\StatusResult;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
 use Greenter\Model\Voided\Voided;
@@ -23,11 +24,12 @@ class SummaryService
     public const MAX_DOCUMENTS = 500;
 
     /**
-     * Códigos de ticket que SUNAT devuelve mientras el proceso sigue en curso.
-     * Llegan con ceros a la izquierda (p. ej. "0098"), por eso se comparan
-     * numéricamente en isPendingTicketCode().
+     * Solo el código 98 indica que SUNAT aún no terminó de procesar el ticket.
+     * El 99 significa "procesado con errores" y ya trae el CDR con el rechazo,
+     * por lo que se debe leer en lugar de tratarlo como pendiente. Los códigos
+     * llegan con ceros a la izquierda ("0098"), por eso se comparan numéricamente.
      */
-    public const TICKET_PENDING_CODES = [98, 99];
+    public const TICKET_PENDING_CODES = [98];
 
     /**
      * @param  Collection<int, Invoice>  $invoices
@@ -54,7 +56,8 @@ class SummaryService
             throw new RuntimeException('El resumen diario solo admite comprobantes de una misma moneda.');
         }
 
-        $reference = static::nextReference($company, SunatOperation::TYPE_SUMMARY, $date);
+        $generatedAt = now();
+        $reference = static::nextReference($company, SunatOperation::TYPE_SUMMARY, $generatedAt);
         $correlativo = static::correlativoFromReference($reference);
 
         $operation = SunatOperation::create([
@@ -62,23 +65,33 @@ class SummaryService
             'type' => SunatOperation::TYPE_SUMMARY,
             'reference' => $reference,
             'reference_date' => $date->toDateString(),
-            'issue_date' => now()->toDateString(),
+            'issue_date' => $generatedAt->toDateString(),
             'environment' => $company->environment(),
             'status' => 'pending',
             'documents_count' => $invoices->count(),
         ]);
 
+        $summary = static::buildSummary($company, $invoices, $date, $correlativo, $generatedAt);
+
+        return static::dispatch($operation, $summary, $invoices->pluck('id')->all(), 'RC');
+    }
+
+    /**
+     * @param  Collection<int, Invoice>  $invoices
+     */
+    public static function buildSummary(Company $company, Collection $invoices, Carbon $date, string $correlativo, Carbon $generatedAt): Summary
+    {
         $summary = new Summary;
         $summary->setCorrelativo($correlativo)
-            ->setFecGeneracion(now())
-            ->setFecResumen($date)
+            ->setFecGeneracion($date->copy()->startOfDay())
+            ->setFecResumen($generatedAt->copy())
             ->setMoneda((string) $invoices->first()->currency)
             ->setCompany(CompanyBuilder::build($company))
             ->setDetails($invoices
                 ->map(fn (Invoice $invoice) => static::summaryDetail($invoice))
                 ->all());
 
-        return static::dispatch($operation, $summary, $invoices->pluck('id')->all(), 'RC');
+        return $summary;
     }
 
     public static function sendVoided(Company $company, Invoice $invoice, string $motivo): SunatOperation
@@ -98,7 +111,8 @@ class SummaryService
         }
 
         $issueDate = Carbon::parse($invoice->issue_date)->startOfDay();
-        $reference = static::nextReference($company, SunatOperation::TYPE_VOIDED, now());
+        $generatedAt = now();
+        $reference = static::nextReference($company, SunatOperation::TYPE_VOIDED, $generatedAt);
         $correlativo = static::correlativoFromReference($reference);
 
         $operation = SunatOperation::create([
@@ -106,7 +120,7 @@ class SummaryService
             'type' => SunatOperation::TYPE_VOIDED,
             'reference' => $reference,
             'reference_date' => $issueDate->toDateString(),
-            'issue_date' => now()->toDateString(),
+            'issue_date' => $generatedAt->toDateString(),
             'environment' => $company->environment(),
             'status' => 'pending',
             'documents_count' => 1,
@@ -121,8 +135,8 @@ class SummaryService
 
         $voided = new Voided;
         $voided->setCorrelativo($correlativo)
-            ->setFecGeneracion(now())
-            ->setFecComunicacion(now())
+            ->setFecGeneracion($issueDate)
+            ->setFecComunicacion($generatedAt)
             ->setCompany(CompanyBuilder::build($company))
             ->setDetails([$detail]);
 
@@ -147,7 +161,8 @@ class SummaryService
         }
 
         $date = Carbon::parse($invoice->issue_date)->startOfDay();
-        $reference = static::nextReference($company, SunatOperation::TYPE_SUMMARY, $date);
+        $generatedAt = now();
+        $reference = static::nextReference($company, SunatOperation::TYPE_SUMMARY, $generatedAt);
         $correlativo = static::correlativoFromReference($reference);
 
         $operation = SunatOperation::create([
@@ -155,22 +170,29 @@ class SummaryService
             'type' => SunatOperation::TYPE_SUMMARY,
             'reference' => $reference,
             'reference_date' => $date->toDateString(),
-            'issue_date' => now()->toDateString(),
+            'issue_date' => $generatedAt->toDateString(),
             'environment' => $company->environment(),
             'status' => 'pending',
             'documents_count' => 1,
             'voids_documents' => true,
         ]);
 
+        $summary = static::buildVoidedSummary($company, $invoice, $correlativo, $generatedAt);
+
+        return static::dispatch($operation, $summary, [$invoice->id], 'RC');
+    }
+
+    public static function buildVoidedSummary(Company $company, Invoice $invoice, string $correlativo, Carbon $generatedAt): Summary
+    {
         $summary = new Summary;
         $summary->setCorrelativo($correlativo)
-            ->setFecGeneracion(now())
-            ->setFecResumen($date)
+            ->setFecGeneracion(Carbon::parse($invoice->issue_date)->startOfDay())
+            ->setFecResumen($generatedAt->copy())
             ->setMoneda((string) $invoice->currency)
             ->setCompany(CompanyBuilder::build($company))
             ->setDetails([static::summaryDetail($invoice, '3')]);
 
-        return static::dispatch($operation, $summary, [$invoice->id], 'RC');
+        return $summary;
     }
 
     /**
@@ -188,22 +210,34 @@ class SummaryService
             throw new RuntimeException('Esta operación todavía no tiene ticket de SUNAT.');
         }
 
-        $company = $operation->company;
+        $operation->loadMissing('company');
 
-        $see = SeeFactory::make($company, true);
-        $status = $see->getStatus($operation->ticket);
+        $see = SeeFactory::make($operation->company, true);
 
-        if (static::isPendingTicketCode($status->getCode())) {
-            $operation->forceFill(['status' => 'processing'])->save();
+        return static::applyStatus($operation, $see->getStatus($operation->ticket));
+    }
 
-            return $operation;
-        }
+    public static function applyStatus(SunatOperation $operation, StatusResult $status): SunatOperation
+    {
+        $cdr = $status->getCdrResponse();
 
-        if (! $status->isSuccess()) {
+        if ($cdr === null) {
+            $code = (string) $status->getCode();
+
+            if (static::isPendingTicketCode($code)) {
+                $operation->forceFill([
+                    'status' => 'processing',
+                    'code' => $code,
+                    'description' => (string) ($status->getError()?->getMessage() ?? ''),
+                ])->save();
+
+                return $operation;
+            }
+
             $error = $status->getError();
             $operation->forceFill([
                 'status' => ResponseMapper::ERROR,
-                'code' => (string) ($error?->getCode() ?? ''),
+                'code' => (string) ($error?->getCode() ?? $code),
                 'description' => (string) ($error?->getMessage() ?? 'SUNAT no devolvió el CDR del resumen.'),
                 'resolved_at' => now(),
             ])->save();
@@ -211,12 +245,11 @@ class SummaryService
             return $operation;
         }
 
-        $cdr = $status->getCdrResponse();
-        $newStatus = ResponseMapper::status($cdr?->getCode());
+        $newStatus = ResponseMapper::status($cdr->getCode());
         $updates = [
             'status' => $newStatus,
-            'code' => $cdr?->getCode(),
-            'description' => $cdr?->getDescription(),
+            'code' => $cdr->getCode(),
+            'description' => $cdr->getDescription(),
             'resolved_at' => now(),
         ];
 
