@@ -116,8 +116,9 @@
                 <div>
                     <label class="text-label-md text-on-surface-variant block mb-1">RUC / DNI</label>
                     <div class="flex flex-wrap gap-2">
-                        <input type="text" wire:model.live="searchDoc"
+                        <input type="text" wire:model.blur="searchDoc"
                                placeholder="{{ $invoice_type === 'F' ? 'RUC (11 dígitos)' : 'DNI o RUC' }}"
+                               wire:keydown.enter.prevent="buscarCliente"
                                class="flex-1 min-w-[140px] w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary outline-none transition-all">
                         <button type="button" wire:click="buscarCliente" wire:loading.attr="disabled"
                                 class="px-4 py-3 bg-primary text-on-primary rounded-xl flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50">

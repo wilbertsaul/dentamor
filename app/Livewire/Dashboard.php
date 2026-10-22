@@ -35,9 +35,9 @@ class Dashboard extends Component
             : 0;
 
         $salesByDay = Invoice::whereBetween('issue_date', [
-                now()->subDays(29)->startOfDay()->toDateString(),
-                now()->endOfDay()->toDateString(),
-            ])
+            now()->subDays(29)->startOfDay()->toDateString(),
+            now()->endOfDay()->toDateString(),
+        ])
             ->whereIn('sunat_status', ['accepted', 'pending'])
             ->selectRaw('issue_date, COALESCE(SUM(total), 0) as total')
             ->groupBy('issue_date')
@@ -56,23 +56,28 @@ class Dashboard extends Component
 
         $chartMax = max(1, (float) $chartDays->max('total'));
 
-        $totalDocs = Invoice::whereMonth('issue_date', now()->month)
-            ->whereYear('issue_date', now()->year)
-            ->count();
-
         $hoyFacturado = (float) Invoice::whereDate('issue_date', $today)
             ->whereIn('sunat_status', ['accepted', 'pending'])
             ->sum('total');
         $hoyReservas = (float) Invoice::where('is_reservation', true)->whereDate('created_at', $today)->sum('total');
+        $hoyTotal = $hoyFacturado + $hoyReservas;
+        $totalDocs = Invoice::whereMonth('issue_date', now()->month)
+            ->whereYear('issue_date', now()->year)
+            ->count();
 
         return view('livewire.dashboard', [
             'totalInvoicesToday' => Invoice::whereDate('issue_date', $today)->count(),
-            'totalAmountToday' => $hoyFacturado,
+            'totalAmountToday' => $hoyTotal,
             'hoyFacturado' => $hoyFacturado,
             'hoyReservas' => $hoyReservas,
-            'hoyTotal' => $hoyFacturado,
+            'hoyTotal' => $hoyTotal,
             'recentInvoices' => Invoice::with('client')
-                ->where('sunat_status', 'accepted')
+                ->where(function ($q) {
+                    $q->where('sunat_status', 'accepted')
+                        ->orWhere(function ($q2) {
+                            $q2->where('is_reservation', true)->where('sunat_status', '!=', 'converted');
+                        });
+                })
                 ->latest()
                 ->take(6)
                 ->get(),
